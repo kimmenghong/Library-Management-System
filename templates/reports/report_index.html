@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Reports | Library Management System{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Reports</h1>
+{% include "reports/report_tabs.html" %}
+<div class="row g-3">
+    <div class="col-md-6 col-xl-3">
+        <a class="report-card" href="{% url 'reports:most_borrowed' %}">
+            <strong>Most Borrowed Books</strong>
+            <span>Book demand and circulation ranking</span>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="report-card" href="{% url 'reports:active_borrowers' %}">
+            <strong>Active Borrowers</strong>
+            <span>Members with active loans</span>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="report-card" href="{% url 'reports:members_with_fines' %}">
+            <strong>Members with Fines</strong>
+            <span>Outstanding fine balances</span>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <a class="report-card" href="{% url 'reports:status_report' %}">
+            <strong>Lost / Damaged / Repair</strong>
+            <span>Collection condition tracking</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

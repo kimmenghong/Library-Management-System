@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}System Settings | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">System Settings</h1>
+        <p class="text-muted mb-0">Library information, policies, theme, email settings, and backups.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'settings_app:library_profile' %}">Edit Library Info</a>
+</div>
+
+{% include "settings_app/settings_tabs.html" %}
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="content-panel h-100">
+            <span class="text-muted">Library</span>
+            <h2 class="h5 mt-1">{{ profile.name|default:"University Library" }}</h2>
+            <p class="mb-0">{{ profile.email|default:"No email configured" }}</p>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="content-panel h-100">
+            <span class="text-muted">System Settings</span>
+            <strong class="fs-2">{{ settings_count }}</strong>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="content-panel h-100">
+            <span class="text-muted">Backup Records</span>
+            <strong class="fs-2">{{ backup_count }}</strong>
+        </div>
+    </div>
+</div>
+{% endblock %}

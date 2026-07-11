@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Email History | Library Management System{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Email Delivery History</h1>
+{% include "notifications/notification_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="metric-card"><span>Total Attempts</span><strong>{{ summary.total }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-accent"><span>Pending</span><strong>{{ summary.pending }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-success"><span>Sent</span><strong>{{ summary.sent }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-danger"><span>Failed</span><strong>{{ summary.failed }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    <div class="col-md-8"><label class="form-label small" for="email-search">Search</label><input id="email-search" class="form-control" name="q" placeholder="Email, subject, or member" value="{{ request.GET.q }}"></div>
+    <div class="col-md-4"><label class="form-label small" for="email-status">Status</label><select id="email-status" class="form-select" name="status"><option value="">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="col-12 d-flex gap-2"><button class="btn btn-outline-primary" type="submit">Apply Filters</button><a class="btn btn-outline-secondary" href="{% url 'notifications:email_reminder_list' %}">Clear</a></div>
+</form>
+
+<div class="card border-0 shadow-sm"><div class="table-responsive"><table class="table table-hover align-middle data-table mb-0">
+    <thead><tr><th>Attempted</th><th>Member</th><th>Email</th><th>Subject</th><th>Type</th><th>Attempt</th><th>Status</th><th></th></tr></thead>
+    <tbody>{% for reminder in email_reminders %}<tr>
+        <td>{{ reminder.attempted_at|date:"M d, Y H:i" }}</td>
+        <td>{{ reminder.member.display_name }}<div class="small text-muted">{{ reminder.member.member_code }}</div></td>
+        <td>{{ reminder.email_to|default:"Missing" }}</td><td>{{ reminder.subject }}</td><td>{{ reminder.get_reminder_type_display }}</td><td>#{{ reminder.attempt_number }}</td>
+        <td><span class="badge status-{{ reminder.status }}">{{ reminder.get_status_display }}</span></td>
+        <td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-secondary" href="{% url 'notifications:email_reminder_detail' reminder.pk %}">View</a>{% if reminder.status == 'failed' and user|has_role_permission:"notifications.send_notification" and reminder.notification %}<form class="d-inline" method="post" action="{% url 'notifications:email_reminder_retry' reminder.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Retry</button></form>{% endif %}</td>
+    </tr>{% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No email attempts match these filters.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

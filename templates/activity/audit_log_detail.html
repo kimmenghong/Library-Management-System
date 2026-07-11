@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-panel">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h3 mb-1">{{ audit_log.model_name }}</h1>
+            <p class="text-muted mb-0">{{ audit_log.get_action_type_display }} · {{ audit_log.object_repr }}</p>
+        </div>
+        <a class="btn btn-outline-secondary" href="{% url 'activity:audit_log_list' %}">Back</a>
+    </div>
+    <dl class="row">
+        <dt class="col-sm-3">User</dt><dd class="col-sm-9">{{ audit_log.user|default:"System" }}</dd>
+        <dt class="col-sm-3">Object ID</dt><dd class="col-sm-9">{{ audit_log.object_id }}</dd>
+        <dt class="col-sm-3">IP Address</dt><dd class="col-sm-9">{{ audit_log.ip_address|default:"-" }}</dd>
+        <dt class="col-sm-3">Date</dt><dd class="col-sm-9">{{ audit_log.created_at|date:"M d, Y H:i" }}</dd>
+    </dl>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <h2 class="h5">Old Values</h2>
+            <pre class="audit-json">{{ audit_log.old_values }}</pre>
+        </div>
+        <div class="col-md-6">
+            <h2 class="h5">New Values</h2>
+            <pre class="audit-json">{{ audit_log.new_values }}</pre>
+        </div>
+    </div>
+</div>
+{% endblock %}

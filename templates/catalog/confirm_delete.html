@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delete | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-3">Confirm Delete</h1>
+    <p class="mb-4">Are you sure you want to delete <strong>{{ object }}</strong>?</p>
+    {% if related_records %}<div class="alert alert-warning">This record is referenced by {{ related_records|join:", " }} and cannot be deleted. Deactivate it instead.</div>{% endif %}
+    <form method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit" {% if related_records %}disabled{% endif %}>Delete</button>
+        <a class="btn btn-outline-secondary" href="{{ cancel_url }}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

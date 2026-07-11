@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="text-muted mb-0">Authentication, user, role, and member overview.</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Total Users</span>
+            <strong>{{ total_users }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Active Users</span>
+            <strong>{{ active_users }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Roles</span>
+            <strong>{{ total_roles }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Members</span>
+            <strong>{{ total_members }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Books</span>
+            <strong>{{ total_books }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Available Copies</span>
+            <strong>{{ available_copies }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Active Borrows</span>
+            <strong>{{ active_borrows }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Reservations</span>
+            <strong>{{ active_reservations }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Unpaid Fines</span>
+            <strong>{{ unpaid_fines }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Unread Notices</span>
+            <strong>{{ unread_notifications }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Lost Books</span>
+            <strong>{{ lost_books }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Damaged Books</span>
+            <strong>{{ damaged_books }}</strong>
+        </div>
+    </div>
+    <div class="col-md-3 col-xl-2">
+        <div class="metric-card">
+            <span>Under Repair</span>
+            <strong>{{ under_repair }}</strong>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white fw-semibold">Recent Users</div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in recent_users %}
+                    <tr>
+                        <td>{{ account.username }}</td>
+                        <td>{{ account.email }}</td>
+                        <td>{{ account.role|default:"No role" }}</td>
+                        <td>{% if account.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+                        <td>{{ account.date_joined|date:"M d, Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-muted text-center py-4">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

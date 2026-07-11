@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}{{ book.title }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div><h1 class="h3 mb-1">{{ book.title }}</h1><p class="text-muted mb-0"><code>{{ book.book_code }}</code>{% if book.subtitle %} · {{ book.subtitle }}{% endif %}</p></div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'catalog:book_list' %}">Back</a>
+        {% if book.available_copies == 0 and user|has_role_permission:"circulation.manage_reservation" %}<a class="btn btn-outline-warning" href="{% url 'circulation:reservation_create' %}?book={{ book.pk }}">Reserve</a>{% endif %}
+        {% if user|has_role_permission:"catalog.manage_copy" %}<a class="btn btn-outline-primary" href="{% url 'catalog:bookcopy_create' %}?book={{ book.pk }}">Add Copy</a>{% endif %}
+        {% if user|has_role_permission:"catalog.edit_book" %}<a class="btn btn-primary" href="{% url 'catalog:book_update' book.pk %}">Edit</a>{% endif %}
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    {% if book.cover_image %}<div class="col-md-3"><img class="book-cover" src="{{ book.cover_image.url }}" alt="Cover of {{ book.title }}"></div>{% endif %}
+    <div class="{% if book.cover_image %}col-md-9{% else %}col-12{% endif %}">
+        <section class="content-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Book Information</h2><span class="badge status-{{ book.status }}">{{ book.get_status_display }}</span></div>
+            <dl class="row mb-0 detail-list">
+                <dt class="col-sm-3">Authors</dt><dd class="col-sm-9">{{ book.author_names|default:"-" }}</dd>
+                <dt class="col-sm-3">ISBN</dt><dd class="col-sm-9">{{ book.isbn|default:"-" }}</dd>
+                <dt class="col-sm-3">Publisher</dt><dd class="col-sm-9">{{ book.publisher|default:"-" }}</dd>
+                <dt class="col-sm-3">Category</dt><dd class="col-sm-9">{{ book.category|default:"-" }}</dd>
+                <dt class="col-sm-3">Publication</dt><dd class="col-sm-9">{{ book.publication_year|default:"-" }}{% if book.edition %} · {{ book.edition }}{% endif %}</dd>
+                <dt class="col-sm-3">Language</dt><dd class="col-sm-9">{{ book.language }}</dd>
+                <dt class="col-sm-3">Pages</dt><dd class="col-sm-9">{{ book.pages|default:"-" }}</dd>
+                <dt class="col-sm-3">Description</dt><dd class="col-sm-9">{{ book.description|linebreaksbr|default:"-" }}</dd>
+            </dl>
+        </section>
+    </div>
+</div>
+
+<section class="content-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Physical Copies</h2><span class="text-muted">{{ book.available_copies }} of {{ book.total_copies }} available</span></div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Copy Code</th><th>Barcode</th><th>Status</th><th>Condition</th><th>Location</th><th>Acquired</th><th></th></tr></thead>
+            <tbody>
+                {% for copy in book.copies.all %}
+                    <tr>
+                        <td><code>{{ copy.copy_code }}</code></td><td>{{ copy.barcode }}</td>
+                        <td><span class="badge status-{{ copy.status }}">{{ copy.get_status_display }}</span></td>
+                        <td>{{ copy.get_condition_display }}</td><td>{{ copy.display_location|default:"-" }}</td><td>{{ copy.acquired_date|date:"M d, Y" }}</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:bookcopy_qr' copy.pk %}" target="_blank" rel="noopener">QR</a>
+                            {% if user|has_role_permission:"catalog.manage_copy" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:bookcopy_update' copy.pk %}">Edit</a>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No physical copies registered.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

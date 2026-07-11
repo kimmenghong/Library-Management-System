@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Import / Export | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Import / Export</h1>
+        <p class="text-muted mb-0">Import books from CSV or Excel, and export core library records.</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <a class="report-card" href="{% url 'import_export:book_import' %}">
+            <strong>Import Books</strong>
+            <span>Upload CSV or Excel files for bulk catalog creation.</span>
+        </a>
+    </div>
+    <div class="col-lg-6">
+        <a class="report-card" href="{% url 'import_export:export' %}">
+            <strong>Export Data</strong>
+            <span>Download books, members, borrowing records, and fine data.</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

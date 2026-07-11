@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Borrowing Policy | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-3">Edit Borrowing Policy</h1>
+    {% include "circulation/circulation_tabs.html" %}
+    <form method="post" class="row g-3" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger mb-0">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            {% if field.name == 'is_active' %}
+                <div class="col-12"><div class="form-check">{{ field }}<label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label></div>{% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}</div>
+            {% else %}
+                <div class="col-md-6">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save Policy</button>
+            <a class="btn btn-outline-secondary" href="{% url 'circulation:policy_list' %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

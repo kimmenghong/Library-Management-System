@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static account_tags %}
+
+{% block title %}Dashboard | Library Management System{% endblock %}
+
+{% block content %}
+<header class="dashboard-heading d-flex flex-column flex-xl-row justify-content-between align-items-xl-end gap-3 mb-4">
+    <div>
+        <p class="text-uppercase small text-primary fw-semibold mb-1">University Library Operations</p>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="text-muted mb-0">Current circulation, inventory health, and member activity.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 dashboard-actions" aria-label="Quick actions">
+        {% if user|has_role_permission:"circulation.create_borrow" %}
+            <a class="btn btn-primary" href="{% url 'circulation:borrow_create' %}"><i data-lucide="book-up" aria-hidden="true"></i> Borrow</a>
+        {% endif %}
+        {% if user|has_role_permission:"circulation.return_book" %}
+            <a class="btn btn-outline-primary" href="{% url 'circulation:return_create' %}"><i data-lucide="book-down" aria-hidden="true"></i> Return</a>
+        {% endif %}
+        {% if user|has_role_permission:"catalog.add_book" %}
+            <a class="btn btn-outline-secondary" href="{% url 'catalog:book_create' %}"><i data-lucide="book-plus" aria-hidden="true"></i> Add book</a>
+        {% endif %}
+        {% if user|has_role_permission:"reports.view_report" %}
+            <a class="btn btn-outline-secondary" href="{% url 'reports:report_index' %}"><i data-lucide="file-chart-column" aria-hidden="true"></i> Reports</a>
+        {% endif %}
+    </div>
+</header>
+
+{% if metrics.overdue_borrows or metrics.ready_reservations %}
+<section class="dashboard-alerts mb-4" aria-label="Items requiring attention">
+    {% if metrics.overdue_borrows %}
+        <a href="{% url 'circulation:borrow_list' %}?status=overdue" class="dashboard-alert dashboard-alert-danger">
+            <i data-lucide="circle-alert" aria-hidden="true"></i>
+            <span><strong>{{ metrics.overdue_borrows }}</strong> overdue loan{{ metrics.overdue_borrows|pluralize }} require follow-up.</span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+        </a>
+    {% endif %}
+    {% if metrics.ready_reservations %}
+        <a href="{% url 'circulation:reservation_list' %}?status=ready" class="dashboard-alert dashboard-alert-warning">
+            <i data-lucide="bookmark-check" aria-hidden="true"></i>
+            <span><strong>{{ metrics.ready_reservations }}</strong> reservation{{ metrics.ready_reservations|pluralize }} ready for pickup.</span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+        </a>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="mb-4" aria-labelledby="inventory-summary-title">
+    <div class="section-heading">
+        <h2 id="inventory-summary-title" class="h5 mb-0">Operational summary</h2>
+        <span class="small text-muted">Live totals</span>
+    </div>
+    <div class="dashboard-metric-grid">
+        <a class="metric-card metric-accent" href="{% url 'catalog:book_list' %}">
+            <span>Book titles</span><strong>{{ metrics.total_titles }}</strong><small>{{ metrics.total_copies }} physical copies</small>
+        </a>
+        <a class="metric-card metric-success" href="{% url 'catalog:bookcopy_list' %}?status=available">
+            <span>Available copies</span><strong>{{ metrics.available_copies }}</strong><small>Ready to circulate</small>
+        </a>
+        <a class="metric-card" href="{% url 'circulation:borrow_list' %}?status=borrowed">
+            <span>Active loans</span><strong>{{ metrics.active_borrows }}</strong><small>{{ metrics.inventory_utilization }}% inventory utilization</small>
+        </a>
+        <a class="metric-card metric-danger" href="{% url 'circulation:borrow_list' %}?status=overdue">
+            <span>Overdue loans</span><strong>{{ metrics.overdue_borrows }}</strong><small>{{ metrics.due_today }} due today</small>
+        </a>
+        <a class="metric-card" href="{% url 'members:member_list' %}">
+            <span>Members</span><strong>{{ metrics.total_members }}</strong><small>{{ metrics.active_members }} active</small>
+        </a>
+        <a class="metric-card" href="{% url 'circulation:reservation_list' %}">
+            <span>Reservations</span><strong>{{ metrics.active_reservations }}</strong><small>{{ metrics.ready_reservations }} ready</small>
+        </a>
+        <a class="metric-card metric-warning" href="{% url 'fines:fine_list' %}">
+            <span>Fine balance</span><strong>${{ metrics.fine_balance|floatformat:2 }}</strong><small>{{ metrics.outstanding_fines }} outstanding</small>
+        </a>
+        <a class="metric-card metric-danger" href="{% url 'status_tracking:status_log_list' %}">
+            <span>Copy exceptions</span><strong>{{ metrics.lost_copies|add:metrics.damaged_copies|add:metrics.repair_copies }}</strong>
+            <small>{{ metrics.lost_copies }} lost, {{ metrics.damaged_copies }} damaged, {{ metrics.repair_copies }} repair</small>
+        </a>
+    </div>
+</section>
+
+<section class="mb-4" aria-labelledby="analytics-title">
+    <div class="section-heading">
+        <h2 id="analytics-title" class="h5 mb-0">Analytics</h2>
+        {% if user|has_role_permission:"reports.view_report" %}<a href="{% url 'reports:report_index' %}">Open reports</a>{% endif %}
+    </div>
+    <div class="row g-3">
+        <div class="col-xl-6">
+            <div class="content-panel dashboard-chart-panel h-100">
+                <h3 class="h6 mb-1">Borrowing trend</h3>
+                <p class="small text-muted mb-3">Loans created during the last six months</p>
+                <div class="dashboard-chart dashboard-chart-wide"><canvas id="monthlyBorrowChart" role="img" aria-label="Monthly borrowing line chart"></canvas></div>
+                <p class="chart-unavailable small text-muted mb-0" hidden>Chart rendering is unavailable. The values remain listed below.</p>
+                <div class="chart-value-list" aria-label="Monthly borrowing values">
+                    {% for item in charts.monthly.series %}<span>{{ item.label }}: {{ item.value }}</span>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="content-panel dashboard-chart-panel h-100">
+                <h3 class="h6 mb-1">Copy status</h3>
+                <p class="small text-muted mb-3">Physical inventory distribution</p>
+                <div class="dashboard-chart"><canvas id="copyStatusChart" role="img" aria-label="Book copy status doughnut chart"></canvas></div>
+                <ul class="chart-legend list-unstyled mb-0">
+                    {% for item in charts.copy_status.series %}<li><span class="legend-dot legend-dot-{{ forloop.counter }}"></span>{{ item.label }}: {{ item.value }}</li>{% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="content-panel dashboard-chart-panel h-100">
+                <h3 class="h6 mb-1">Top categories</h3>
+                <p class="small text-muted mb-3">Titles by catalog category</p>
+                <div class="dashboard-chart"><canvas id="categoryChart" role="img" aria-label="Top book categories bar chart"></canvas></div>
+                {% if not charts.categories.labels %}<p class="small text-muted mb-0">No categorized titles yet.</p>{% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3 mb-4" aria-label="Circulation rankings">
+    <div class="col-lg-6">
+        <div class="content-panel h-100">
+            <div class="section-heading">
+                <h2 class="h6 mb-0">Most borrowed books</h2>
+                {% if user|has_role_permission:"reports.view_report" %}<a href="{% url 'reports:most_borrowed' %}">Full report</a>{% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 data-table">
+                    <thead><tr><th scope="col">Book</th><th scope="col" class="text-end">Total</th><th scope="col" class="text-end">Active</th></tr></thead>
+                    <tbody>
+                    {% for book in top_books %}
+                        <tr><td><a href="{% url 'catalog:book_detail' book.pk %}">{{ book.title }}</a><div class="small text-muted">{{ book.book_code }}</div></td><td class="text-end">{{ book.borrow_count }}</td><td class="text-end">{{ book.active_borrow_count }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="text-muted text-center py-4">No borrowing data yet.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="content-panel h-100">
+            <div class="section-heading">
+                <h2 class="h6 mb-0">Active borrowers</h2>
+                {% if user|has_role_permission:"reports.view_report" %}<a href="{% url 'reports:active_borrowers' %}">Full report</a>{% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0 data-table">
+                    <thead><tr><th scope="col">Member</th><th scope="col">Type</th><th scope="col" class="text-end">Loans</th></tr></thead>
+                    <tbody>
+                    {% for member in active_borrowers %}
+                        <tr><td>{{ member.display_name }}<div class="small text-muted">{{ member.member_code }}</div></td><td>{{ member.get_member_type_display }}</td><td class="text-end">{{ member.active_borrow_count }}</td></tr>
+                    {% empty %}<tr><td colspan="3" class="text-muted text-center py-4">No active borrowers.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-3" aria-label="Recent operations">
+    <div class="col-xl-7">
+        <div class="content-panel h-100">
+            <div class="section-heading">
+                <h2 class="h6 mb-0">Recent borrowing</h2>
+                {% if user|has_role_permission:"circulation.view_borrow" %}<a href="{% url 'circulation:borrow_list' %}">View all</a>{% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0 data-table">
+                    <thead><tr><th scope="col">Member</th><th scope="col">Book copy</th><th scope="col">Due</th><th scope="col">Status</th></tr></thead>
+                    <tbody>
+                    {% for record in recent_borrows %}
+                        <tr><td>{{ record.member.display_name }}</td><td><a href="{% url 'circulation:borrow_detail' record.pk %}">{{ record.book_copy.book.title }}</a><div class="small text-muted">{{ record.book_copy.copy_code }}</div></td><td>{{ record.due_date|date:"M d, Y" }}</td><td><span class="badge status-{{ record.status }}">{{ record.get_status_display }}</span></td></tr>
+                    {% empty %}<tr><td colspan="4" class="text-muted text-center py-4">No visible borrow records.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="content-panel mb-3">
+            <div class="section-heading">
+                <h2 class="h6 mb-0">Announcements</h2>
+                {% if user|has_role_permission:"announcements.view_announcement" %}<a href="{% url 'announcements:list' %}">View all</a>{% endif %}
+            </div>
+            <div class="list-group list-group-flush">
+            {% for item in announcements %}
+                {% if user|has_role_permission:"announcements.view_announcement" %}
+                    <a class="list-group-item px-0 text-decoration-none" href="{% url 'announcements:detail' item.pk %}"><span class="fw-semibold d-block">{{ item.title }}</span><span class="small text-muted">{{ item.publish_date|date:"M d, Y H:i" }}</span></a>
+                {% else %}
+                    <div class="list-group-item px-0"><span class="fw-semibold d-block">{{ item.title }}</span><span class="small text-muted">{{ item.publish_date|date:"M d, Y H:i" }}</span></div>
+                {% endif %}
+            {% empty %}<p class="text-muted mb-0 py-2">No current announcements.</p>{% endfor %}
+            </div>
+        </div>
+        {% if recent_activities %}
+        <div class="content-panel">
+            <div class="section-heading"><h2 class="h6 mb-0">Recent activity</h2><a href="{% url 'activity:activity_log_list' %}">View log</a></div>
+            <div class="activity-list">
+            {% for item in recent_activities %}
+                <div class="activity-item"><span class="activity-marker"></span><div><span class="fw-semibold d-block">{{ item.action }}</span><span class="small text-muted">{{ item.user|default:"System" }} · {{ item.created_at|date:"M d, H:i" }}</span></div></div>
+            {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+{{ charts|json_script:"dashboard-chart-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+{% endblock %}

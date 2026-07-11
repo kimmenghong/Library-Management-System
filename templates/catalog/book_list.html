@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Books | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div><h1 class="h3 mb-0">Books</h1></div>
+    {% if user|has_role_permission:"catalog.add_book" %}<a class="btn btn-primary" href="{% url 'catalog:book_create' %}">Add Book</a>{% endif %}
+</div>
+{% include "catalog/catalog_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="metric-card"><span>Titles</span><strong>{{ summary.titles }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-accent"><span>Copies</span><strong>{{ summary.copies }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-success"><span>Available</span><strong>{{ summary.available }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-warning"><span>Borrowed</span><strong>{{ summary.borrowed }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    {% if advanced_form.errors %}<div class="col-12"><div class="alert alert-danger mb-0">Correct the invalid search filters below.</div></div>{% endif %}
+    {% for field in advanced_form %}
+        <div class="{% if field.name == 'q' or field.name == 'title' %}col-md-6 col-xl-3{% else %}col-6 col-md-4 col-xl-2{% endif %}">
+            <label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+        </div>
+    {% endfor %}
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+        <a class="btn btn-outline-secondary" href="{% url 'catalog:book_list' %}">Clear</a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Code</th><th>Title</th><th>Authors</th><th>Category</th><th>ISBN</th><th>Availability</th><th></th></tr></thead>
+            <tbody>
+                {% for book in books %}
+                    <tr>
+                        <td><code>{{ book.book_code }}</code></td>
+                        <td><a class="fw-semibold text-decoration-none" href="{% url 'catalog:book_detail' book.pk %}">{{ book.title }}</a>{% if book.subtitle %}<div class="small text-muted">{{ book.subtitle }}</div>{% endif %}</td>
+                        <td>{{ book.author_names|default:"-" }}</td>
+                        <td>{{ book.category|default:"-" }}</td>
+                        <td>{{ book.isbn|default:"-" }}</td>
+                        <td><strong>{{ book.available_count }}</strong> / {{ book.copy_count }}<div class="small text-muted">{{ book.get_status_display }}</div></td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:book_detail' book.pk %}">View</a>
+                            {% if user|has_role_permission:"catalog.edit_book" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:book_update' book.pk %}">Edit</a>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No books match these filters.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

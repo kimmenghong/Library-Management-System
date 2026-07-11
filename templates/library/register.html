@@ -1,0 +1,97 @@
+{% extends "library/base.html" %}
+{% load static %}
+
+{% block title %}Register | Library Management System{% endblock %}
+
+{% block content %}
+{% get_static_prefix as STATIC_PREFIX %}
+<div class="auth-page-shell">
+    <div class="auth-panel shadow-sm auth-panel-wide">
+        <div class="row g-0 align-items-stretch">
+            <div class="col-xl-5 col-lg-5">
+                <div class="auth-image-wrap">
+                    <img
+                        src="{{ STATIC_PREFIX }}images/library-login.jpg"
+                        class="auth-image"
+                        alt="University library reading area"
+                    >
+                </div>
+            </div>
+            <div class="col-xl-7 col-lg-7">
+                <div class="auth-form-panel auth-form-panel-wide">
+                    <div class="auth-kicker">Member Registration</div>
+                    <h1 class="h4 mb-1">Create Library Account</h1>
+                    <p class="text-secondary mb-4">
+                        {% if use_supabase_auth %}Register with email authentication.{% else %}Supabase registration is not enabled yet.{% endif %}
+                    </p>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.full_name.id_for_label }}">Full name</label>
+                                {{ form.full_name }}
+                                {% for error in form.full_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.email.id_for_label }}">Email address</label>
+                                {{ form.email }}
+                                {% for error in form.email.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-0">
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+                                {{ form.password }}
+                                {% for error in form.password.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
+                                {{ form.password_confirm }}
+                                {% for error in form.password_confirm.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3 mt-3">
+                            <label class="form-label" for="{{ form.phone.id_for_label }}">Phone</label>
+                            {{ form.phone }}
+                            {% for error in form.phone.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label" for="{{ form.address.id_for_label }}">Address</label>
+                            {{ form.address }}
+                            {% for error in form.address.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <button class="btn btn-primary w-100" type="submit">Create account</button>
+                    </form>
+                    <div class="text-center small mt-3">
+                        <span class="text-secondary">Already registered?</span>
+                        <a href="{% url 'library:login' %}">Sign in</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

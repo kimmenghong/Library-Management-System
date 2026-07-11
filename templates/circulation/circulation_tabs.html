@@ -1,0 +1,10 @@
+{% load account_tags %}
+<nav class="catalog-tabs mb-3" aria-label="Circulation sections">
+    <a href="{% url 'circulation:borrow_list' %}">Loans</a>
+    {% if user|has_role_permission:"circulation.create_borrow" %}<a href="{% url 'circulation:borrow_create' %}">Issue Book</a>{% endif %}
+    {% if user|has_role_permission:"circulation.return_book" %}<a href="{% url 'circulation:return_create' %}">Return Book</a>{% endif %}
+    {% if user|has_role_permission:"circulation.manage_reservation" %}<a href="{% url 'circulation:reservation_list' %}">Reservations</a>{% endif %}
+    <a href="{% url 'circulation:return_list' %}">Return History</a>
+    <a href="{% url 'circulation:renewal_list' %}">Renewal History</a>
+    {% if user|has_role_permission:"circulation.manage_policy" %}<a href="{% url 'circulation:policy_list' %}">Policies</a>{% endif %}
+</nav>

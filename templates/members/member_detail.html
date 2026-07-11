@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}{{ member.display_name }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="h3 mb-0">{{ member.display_name }}</h1>
+            <span class="badge status-{{ member.status }}">{{ member.get_status_display }}</span>
+        </div>
+        <p class="text-muted mb-0"><code>{{ member.member_code }}</code> · {{ member.get_member_type_display }}</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        {% if user|has_role_permission:"notifications.view_notification" %}<a class="btn btn-outline-secondary" href="{% url 'notifications:member_history' member.pk %}">Notifications</a>{% endif %}
+        {% if user|has_role_permission:"members.suspend_member" %}<a class="btn btn-outline-warning" href="{% url 'members:member_status_update' member.pk %}">Status</a>{% endif %}
+        {% if user|has_role_permission:"members.edit_member" %}<a class="btn btn-primary" href="{% url 'members:member_update' member.pk %}">Edit</a>{% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="metric-card"><span>Total Borrows</span><strong>{{ total_borrows }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-accent"><span>Active Borrows</span><strong>{{ active_borrows }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-warning"><span>Reservations</span><strong>{{ reservation_count }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-danger"><span>Open Fines</span><strong>{{ fine_count }}</strong></div></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <section class="content-panel h-100">
+            <h2 class="h5 mb-3">Membership</h2>
+            <dl class="row mb-0 detail-list">
+                <dt class="col-sm-4">Username</dt><dd class="col-sm-8">{{ member.user.username }}</dd>
+                <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ member.user.email }}</dd>
+                <dt class="col-sm-4">Phone</dt><dd class="col-sm-8">{{ member.contact_phone|default:"-" }}</dd>
+                <dt class="col-sm-4">Address</dt><dd class="col-sm-8">{{ member.contact_address|default:"-" }}</dd>
+                <dt class="col-sm-4">Joined</dt><dd class="col-sm-8">{{ member.joined_date|date:"M d, Y" }}</dd>
+                <dt class="col-sm-4">Expiry</dt><dd class="col-sm-8">{{ member.expiry_date|date:"M d, Y"|default:"No expiry" }}</dd>
+                <dt class="col-sm-4">Emergency contact</dt><dd class="col-sm-8">{{ member.emergency_contact_name|default:"-" }}{% if member.emergency_contact_phone %}<br><span class="text-muted">{{ member.emergency_contact_phone }}</span>{% endif %}</dd>
+                <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">{{ member.notes|linebreaksbr|default:"-" }}</dd>
+            </dl>
+        </section>
+    </div>
+
+    <div class="col-lg-6">
+        <section class="content-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">{{ member.get_member_type_display }} Profile</h2>
+                {% if profile and user|has_role_permission:"members.edit_member" %}
+                    {% if member.member_type == 'student' %}<a class="btn btn-sm btn-outline-primary" href="{% url 'members:student_profile_update' profile.pk %}">Edit Profile</a>{% endif %}
+                    {% if member.member_type == 'teacher' %}<a class="btn btn-sm btn-outline-primary" href="{% url 'members:teacher_profile_update' profile.pk %}">Edit Profile</a>{% endif %}
+                    {% if member.member_type == 'staff' %}<a class="btn btn-sm btn-outline-primary" href="{% url 'members:staff_profile_update' profile.pk %}">Edit Profile</a>{% endif %}
+                    {% if member.member_type == 'librarian' or member.member_type == 'assistant_librarian' %}<a class="btn btn-sm btn-outline-primary" href="{% url 'members:librarian_profile_update' profile.pk %}">Edit Profile</a>{% endif %}
+                {% endif %}
+            </div>
+
+            {% if profile %}
+                <dl class="row mb-0 detail-list">
+                    {% if member.member_type == 'student' %}
+                        <dt class="col-sm-4">Student ID</dt><dd class="col-sm-8">{{ profile.student_id }}</dd>
+                        <dt class="col-sm-4">Department</dt><dd class="col-sm-8">{{ profile.department }}</dd>
+                        <dt class="col-sm-4">Program</dt><dd class="col-sm-8">{{ profile.program|default:"-" }}</dd>
+                        <dt class="col-sm-4">Year / Semester</dt><dd class="col-sm-8">{{ profile.year_level }} / {{ profile.semester }}</dd>
+                        <dt class="col-sm-4">Enrollment</dt><dd class="col-sm-8">{{ profile.enrollment_date|date:"M d, Y"|default:"-" }}</dd>
+                        <dt class="col-sm-4">Guardian</dt><dd class="col-sm-8">{{ profile.guardian_name|default:"-" }}{% if profile.guardian_phone %}<br><span class="text-muted">{{ profile.guardian_phone }}</span>{% endif %}</dd>
+                    {% elif member.member_type == 'teacher' %}
+                        <dt class="col-sm-4">Teacher ID</dt><dd class="col-sm-8">{{ profile.teacher_id }}</dd>
+                        <dt class="col-sm-4">Faculty</dt><dd class="col-sm-8">{{ profile.faculty }}</dd>
+                        <dt class="col-sm-4">Department</dt><dd class="col-sm-8">{{ profile.department }}</dd>
+                        <dt class="col-sm-4">Designation</dt><dd class="col-sm-8">{{ profile.designation|default:"-" }}</dd>
+                        <dt class="col-sm-4">Office</dt><dd class="col-sm-8">{{ profile.office|default:"-" }}</dd>
+                        <dt class="col-sm-4">Employment</dt><dd class="col-sm-8">{{ profile.employment_date|date:"M d, Y"|default:"-" }}</dd>
+                    {% elif member.member_type == 'staff' %}
+                        <dt class="col-sm-4">Staff ID</dt><dd class="col-sm-8">{{ profile.staff_id }}</dd>
+                        <dt class="col-sm-4">Department</dt><dd class="col-sm-8">{{ profile.department }}</dd>
+                        <dt class="col-sm-4">Position</dt><dd class="col-sm-8">{{ profile.position }}</dd>
+                        <dt class="col-sm-4">Office</dt><dd class="col-sm-8">{{ profile.office|default:"-" }}</dd>
+                        <dt class="col-sm-4">Employment</dt><dd class="col-sm-8">{{ profile.employment_date|date:"M d, Y"|default:"-" }}</dd>
+                    {% else %}
+                        <dt class="col-sm-4">Librarian ID</dt><dd class="col-sm-8">{{ profile.librarian_id }}</dd>
+                        <dt class="col-sm-4">Employee type</dt><dd class="col-sm-8">{{ profile.get_employee_type_display }}</dd>
+                        <dt class="col-sm-4">Department</dt><dd class="col-sm-8">{{ profile.department }}</dd>
+                        <dt class="col-sm-4">Shift</dt><dd class="col-sm-8">{{ profile.shift|default:"-" }}</dd>
+                        <dt class="col-sm-4">Hire date</dt><dd class="col-sm-8">{{ profile.hire_date|date:"M d, Y"|default:"-" }}</dd>
+                        <dt class="col-sm-4">Overrides</dt><dd class="col-sm-8">{{ profile.can_approve_overrides|yesno:"Allowed,Not allowed" }}</dd>
+                    {% endif %}
+                </dl>
+            {% else %}
+                <p class="text-muted">No specialized profile has been created for this member.</p>
+                {% if user|has_role_permission:"members.add_member" %}
+                    {% if member.member_type == 'student' %}<a class="btn btn-outline-primary" href="{% url 'members:student_profile_create_for_member' member.pk %}">Create Student Profile</a>{% endif %}
+                    {% if member.member_type == 'teacher' %}<a class="btn btn-outline-primary" href="{% url 'members:teacher_profile_create_for_member' member.pk %}">Create Teacher Profile</a>{% endif %}
+                    {% if member.member_type == 'staff' %}<a class="btn btn-outline-primary" href="{% url 'members:staff_profile_create_for_member' member.pk %}">Create Staff Profile</a>{% endif %}
+                    {% if member.member_type == 'librarian' or member.member_type == 'assistant_librarian' %}<a class="btn btn-outline-primary" href="{% url 'members:librarian_profile_create_for_member' member.pk %}">Create Librarian Profile</a>{% endif %}
+                {% endif %}
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

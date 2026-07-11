@@ -1,0 +1,100 @@
+{% extends "library/base.html" %}
+
+{% block title %}Fines | Library Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-kicker">Payments</div>
+        <h1 class="page-title">Fine Management</h1>
+        <p class="page-subtitle">Review balances linked to borrow records and members.</p>
+    </div>
+    {% if can_manage %}
+        <a class="btn btn-primary" href="{% url 'library:fine_create' %}">
+            <i class="bi bi-plus-lg me-1"></i>Add Fine
+        </a>
+    {% endif %}
+</div>
+
+<div class="toolbar-panel mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-7 col-xl-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input class="form-control" type="search" placeholder="Search member, book, amount, or status" data-table-search="#fineTable">
+            </div>
+        </div>
+        <div class="col-md-auto ms-md-auto">
+            <span class="badge text-bg-light border">{{ page_obj.paginator.count }} fine{{ page_obj.paginator.count|pluralize }}</span>
+        </div>
+        <div class="col-12">
+            <div class="table-tool-group" data-table-tools="#fineTable">
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle-column-filters>
+                    <i class="bi bi-layout-three-columns me-1"></i>Columns
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="excel">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="pdf">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-print-table>
+                    <i class="bi bi-printer me-1"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-panel p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table" id="fineTable" data-enhanced-table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Amount</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Paid Date</th>
+                    {% if can_manage %}<th class="text-end">Action</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for fine in fines %}
+                    <tr>
+                        <td class="text-secondary">#{{ fine.fine_id }}</td>
+                        <td><span class="fw-semibold">{{ fine.member.member_code }}</span></td>
+                        <td>{{ fine.borrow.book.title }}</td>
+                        <td>{{ fine.amount }}</td>
+                        <td>{{ fine.paid_amount }}</td>
+                        <td><span class="fw-semibold">{{ fine.balance }}</span></td>
+                        <td>
+                            <span class="badge status-badge text-bg-{% if fine.status == 'paid' %}success{% elif fine.status == 'waived' %}secondary{% elif fine.status == 'partially_paid' %}warning{% else %}danger{% endif %}">
+                                {{ fine.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ fine.paid_date|default:"-" }}</td>
+                        {% if can_manage %}
+                            <td class="text-end">
+                                {% if fine.status != 'paid' and fine.status != 'waived' %}
+                                    <a class="btn btn-sm btn-outline-success" href="{% url 'library:fine_pay' fine.fine_id %}">
+                                        <i class="bi bi-credit-card me-1"></i>Payment
+                                    </a>
+                                {% else %}
+                                    <span class="text-secondary">-</span>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="9" class="empty-state">No fines found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "library/includes/pagination.html" %}
+{% endblock %}

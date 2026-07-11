@@ -1,0 +1,15 @@
+Django==6.0.6
+Brotli==1.1.0
+djangorestframework==3.17.1
+djangorestframework-simplejwt==5.5.1
+gunicorn==26.0.0
+httpx>=0.28,<1
+openpyxl==3.1.5
+Pillow==12.2.0
+psycopg[binary]>=3.2,<4
+python-dotenv==1.2.2
+reportlab==4.2.5
+whitenoise==6.12.0
+
+# Optional MySQL deployment dependency:
+# mysqlclient>=2.2,<3

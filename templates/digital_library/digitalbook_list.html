@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Library | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Digital Library</h1>
+        <p class="text-muted mb-0">Upload, search, view, and download approved PDF and eBook files.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'digital_library:create' %}">Upload Digital Book</a>
+</div>
+
+{% include "digital_library/digital_tabs.html" %}
+
+<form class="row g-2 mb-3 content-panel">
+    <div class="col-md-6">
+        <input class="form-control" name="q" placeholder="Search by title" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" name="category">
+            <option value="">All digital categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-outline-primary w-100" type="submit">Search</button>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Access</th>
+                    <th>Downloads</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for digital_book in digital_books %}
+                    <tr>
+                        <td>
+                            <a class="fw-semibold text-decoration-none" href="{% url 'digital_library:detail' digital_book.pk %}">{{ digital_book.title }}</a>
+                            {% if digital_book.book %}<div class="small text-muted">{{ digital_book.book.book_code }}</div>{% endif %}
+                        </td>
+                        <td>{{ digital_book.category|default:"-" }}</td>
+                        <td>{{ digital_book.get_file_type_display }}</td>
+                        <td>
+                            {% if digital_book.is_public %}
+                                <span class="badge text-bg-success">Public</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">Role restricted</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ digital_book.download_count }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'digital_library:detail' digital_book.pk %}">View</a>
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'digital_library:update' digital_book.pk %}">Edit</a>
+                            <a class="btn btn-sm btn-primary" href="{% url 'digital_library:download' digital_book.pk %}">Download</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No digital books found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

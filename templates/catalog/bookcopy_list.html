@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Book Copies | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><h1 class="h3 mb-0">Book Copies</h1><a class="btn btn-primary" href="{% url 'catalog:bookcopy_create' %}">Add Copy</a></div>
+{% include "catalog/catalog_tabs.html" %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg"><div class="metric-card metric-success"><span>Available</span><strong>{{ summary.available }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-accent"><span>Borrowed</span><strong>{{ summary.borrowed }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-danger"><span>Lost</span><strong>{{ summary.lost }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-warning"><span>Damaged</span><strong>{{ summary.damaged }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card"><span>Under Repair</span><strong>{{ summary.under_repair }}</strong></div></div>
+</div>
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-8"><input class="form-control" name="q" placeholder="Copy code, barcode, title, ISBN, or book code" value="{{ request.GET.q }}"></div>
+    <div class="col-md-2"><select class="form-select" name="status"><option value="">All statuses</option>{% for value,label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div class="col-md-2 d-flex gap-2"><button class="btn btn-outline-primary flex-grow-1" type="submit">Filter</button><a class="btn btn-outline-secondary" href="{% url 'catalog:bookcopy_list' %}">Clear</a></div>
+</form>
+<div class="card border-0 shadow-sm"><div class="table-responsive"><table class="table table-hover align-middle data-table mb-0">
+    <thead><tr><th>Copy</th><th>Book</th><th>Barcode</th><th>Status</th><th>Condition</th><th>Location</th><th></th></tr></thead>
+    <tbody>{% for copy in copies %}<tr>
+        <td><code>{{ copy.copy_code }}</code></td><td><a class="text-decoration-none" href="{% url 'catalog:book_detail' copy.book_id %}">{{ copy.book.title }}</a></td><td>{{ copy.barcode }}</td>
+        <td><span class="badge status-{{ copy.status }}">{{ copy.get_status_display }}</span></td><td>{{ copy.get_condition_display }}</td><td>{{ copy.display_location|default:"-" }}</td>
+        <td class="text-end text-nowrap"><a class="btn btn-sm btn-outline-secondary" href="{% url 'catalog:bookcopy_qr' copy.pk %}" target="_blank" rel="noopener">QR</a><a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:bookcopy_update' copy.pk %}">Edit</a><a class="btn btn-sm btn-outline-danger" href="{% url 'catalog:bookcopy_delete' copy.pk %}">Delete</a></td>
+    </tr>{% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No book copies match these filters.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Reservations | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Reservations</h1>
+    <a class="btn btn-primary" href="{% url 'circulation:reservation_create' %}">Create Reservation</a>
+</div>
+{% include "circulation/circulation_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="metric-card metric-warning"><span>Pending</span><strong>{{ summary.pending }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-accent"><span>Ready</span><strong>{{ summary.ready }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-success"><span>Fulfilled</span><strong>{{ summary.fulfilled }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card"><span>Cancelled</span><strong>{{ summary.cancelled }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    <div class="col-md-8">
+        <label class="form-label small" for="reservation-search">Search</label>
+        <input id="reservation-search" class="form-control" name="q" placeholder="Member, title, or book code" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label small" for="reservation-status">Status</label>
+        <select id="reservation-status" class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+        <a class="btn btn-outline-secondary" href="{% url 'circulation:reservation_list' %}">Clear</a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Member</th><th>Book</th><th>Reserved</th><th>Queue / Pickup</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.member.display_name }}<div class="small text-muted">{{ reservation.member.member_code }}</div></td>
+                        <td>{{ reservation.book.title }}<div class="small"><code>{{ reservation.book.book_code }}</code></div></td>
+                        <td>{{ reservation.reserved_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if reservation.status == 'pending' %}Position {{ reservation.queue_position }}
+                            {% elif reservation.status == 'ready' %}<strong>Until {{ reservation.expiry_date|date:"M d, Y" }}</strong><div class="small text-muted">Ready {{ reservation.ready_date|date:"M d, Y" }}</div>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td><span class="badge status-{{ reservation.status }}">{{ reservation.get_status_display }}</span></td>
+                        <td class="text-end">
+                            {% if reservation.is_active %}<a class="btn btn-sm btn-outline-primary" href="{% url 'circulation:reservation_update' reservation.pk %}">{% if user.is_superuser or user|has_role_permission:"circulation.create_borrow" %}Update{% else %}Cancel{% endif %}</a>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No reservations match these filters.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

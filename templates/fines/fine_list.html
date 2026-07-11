@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Fines | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Fines</h1>
+    {% if user|has_role_permission:"fines.manage_fine" %}<a class="btn btn-primary" href="{% url 'fines:fine_create' %}">Create Fine</a>{% endif %}
+</div>
+{% include "fines/fine_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg"><div class="metric-card"><span>Total</span><strong>{{ summary.total }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-danger"><span>Outstanding</span><strong>{{ summary.outstanding_count }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-warning"><span>Balance</span><strong>{{ summary.outstanding_balance|floatformat:2 }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-success"><span>Paid</span><strong>{{ summary.paid_count }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card"><span>Waived</span><strong>{{ summary.waived_count }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    <div class="col-md-6">
+        <label class="form-label small" for="fine-search">Search</label>
+        <input id="fine-search" class="form-control" name="q" placeholder="Member, title, copy, or description" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-6 col-md-3">
+        <label class="form-label small" for="fine-status">Status</label>
+        <select id="fine-status" class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-6 col-md-3">
+        <label class="form-label small" for="fine-reason">Reason</label>
+        <select id="fine-reason" class="form-select" name="reason">
+            <option value="">All reasons</option>
+            {% for value, label in reasons %}<option value="{{ value }}" {% if request.GET.reason == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+        <a class="btn btn-outline-secondary" href="{% url 'fines:fine_list' %}">Clear</a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Member</th><th>Reason</th><th>Assessed</th><th>Paid</th><th>Balance</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for fine in fines %}
+                    <tr>
+                        <td>{{ fine.member.display_name }}<div class="small text-muted">{{ fine.member.member_code }}</div></td>
+                        <td>{{ fine.get_reason_display }}{% if fine.borrow_record %}<div class="small text-muted">{{ fine.borrow_record.book_copy.book.title }}</div>{% endif %}</td>
+                        <td>{{ fine.amount|floatformat:2 }}</td>
+                        <td>{{ fine.paid_amount|floatformat:2 }}</td>
+                        <td class="{% if fine.is_outstanding %}fw-semibold text-danger{% endif %}">{{ fine.balance|floatformat:2 }}</td>
+                        <td><span class="badge status-{{ fine.status }}">{{ fine.get_status_display }}</span></td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'fines:fine_detail' fine.pk %}">View</a>
+                            {% if fine.is_outstanding and user|has_role_permission:"fines.receive_payment" %}<a class="btn btn-sm btn-outline-success" href="{% url 'fines:payment_create_for_fine' fine.pk %}">Pay</a>{% endif %}
+                            {% if fine.is_outstanding and fine.payment_count == 0 and user|has_role_permission:"fines.manage_fine" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'fines:fine_update' fine.pk %}">Edit</a>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No fines match these filters.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

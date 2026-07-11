@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-1">{{ page_title }}</h1>
+    {% if member %}<p class="text-muted mb-3"><code>{{ member.member_code }}</code> · {{ member.display_name }}</p>{% endif %}
+    <form method="post" class="row g-3" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            <div class="col-md-6">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save Profile</button>
+            <a class="btn btn-outline-secondary" href="{% if member %}{% url 'members:member_detail' member.pk %}{% else %}{% url 'members:member_list' %}{% endif %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

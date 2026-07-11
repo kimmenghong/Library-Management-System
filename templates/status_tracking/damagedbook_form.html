@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-3">{% if object %}Edit Damaged Book{% else %}Report Damaged Book{% endif %}</h1>
+    {% include "status_tracking/status_tabs.html" %}
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="col-12">
+                <div class="alert alert-danger mb-0">{{ form.non_field_errors }}</div>
+            </div>
+        {% endif %}
+        {% for field in form %}
+            <div class="{% if field.name == 'description' or field.name == 'resolution_notes' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a class="btn btn-outline-secondary" href="{% url 'status_tracking:damaged_list' %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

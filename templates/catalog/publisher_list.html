@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Publishers</h1>
+    <a class="btn btn-primary" href="{% url 'catalog:publisher_create' %}">Add Publisher</a>
+</div>
+{% include "catalog/catalog_tabs.html" %}
+<form class="row g-2 mb-3">
+    <div class="col-md-10"><input class="form-control" name="q" placeholder="Search publisher or email" value="{{ request.GET.q }}"></div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Search</button></div>
+</form>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Books</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for publisher in publishers %}
+                    <tr>
+                        <td>{{ publisher.name }}</td>
+                        <td>{{ publisher.contact_email|default:"-" }}</td>
+                        <td>{{ publisher.phone|default:"-" }}</td>
+                        <td>{{ publisher.book_count }}</td>
+                        <td>{{ publisher.is_active|yesno:"Active,Inactive" }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:publisher_update' publisher.pk %}">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'catalog:publisher_delete' publisher.pk %}">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No publishers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

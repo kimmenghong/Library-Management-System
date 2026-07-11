@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Authors</h1>
+    <a class="btn btn-primary" href="{% url 'catalog:author_create' %}">Add Author</a>
+</div>
+{% include "catalog/catalog_tabs.html" %}
+<form class="row g-2 mb-3">
+    <div class="col-md-10"><input class="form-control" name="q" placeholder="Search author or nationality" value="{{ request.GET.q }}"></div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Search</button></div>
+</form>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Name</th><th>Nationality</th><th>Books</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for author in authors %}
+                    <tr>
+                        <td>{{ author.name }}</td>
+                        <td>{{ author.nationality|default:"-" }}</td>
+                        <td>{{ author.book_count }}</td>
+                        <td>{{ author.is_active|yesno:"Active,Inactive" }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:author_update' author.pk %}">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'catalog:author_delete' author.pk %}">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No authors found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

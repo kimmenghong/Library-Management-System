@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-3">My Profile</h1>
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <span class="badge text-bg-light border">Username: {{ user.username }}</span>
+        <span class="badge text-bg-light border">Role: {{ user.role|default:"Not assigned" }}</span>
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'accounts:password_change' %}">Change password</a>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            <div class="col-md-6">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit">Update Profile</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

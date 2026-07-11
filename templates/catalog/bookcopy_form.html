@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Edit Book Copy{% else %}Register Book Copy{% endif %} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-1">{% if object %}Edit Book Copy{% else %}Register Book Copy{% endif %}</h1>
+    {% if object %}<p class="text-muted mb-3"><code>{{ object.copy_code }}</code> · {{ object.book.title }}</p>{% elif selected_book %}<p class="text-muted mb-3">{{ selected_book.title }}</p>{% endif %}
+    <form method="post" class="row g-3" novalidate>
+        {% csrf_token %}
+        {% if selected_book %}<input type="hidden" name="book_context" value="{{ selected_book.pk }}">{% endif %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            <div class="{% if field.name == 'notes' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2"><button class="btn btn-primary" type="submit">Save Copy</button><a class="btn btn-outline-secondary" href="{% if object %}{% url 'catalog:book_detail' object.book_id %}{% elif selected_book %}{% url 'catalog:book_detail' selected_book.pk %}{% else %}{% url 'catalog:bookcopy_list' %}{% endif %}">Cancel</a></div>
+    </form>
+</div>
+{% endblock %}

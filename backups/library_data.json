@@ -1,0 +1,540 @@
+[
+{
+  "model": "library.role",
+  "pk": 1,
+  "fields": {
+    "role_name": "Super Admin",
+    "description": "Full control of the Library Management System."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 2,
+  "fields": {
+    "role_name": "Admin",
+    "description": "Manages users, master data, and reports."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 3,
+  "fields": {
+    "role_name": "Librarian",
+    "description": "Manages books, borrowing, returns, and fines."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 4,
+  "fields": {
+    "role_name": "Assistant Librarian",
+    "description": "Assists with daily circulation operations."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 5,
+  "fields": {
+    "role_name": "Student",
+    "description": "University student library member."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 6,
+  "fields": {
+    "role_name": "Teacher",
+    "description": "Academic teaching staff library member."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 7,
+  "fields": {
+    "role_name": "Staff",
+    "description": "University administrative staff library member."
+  }
+},
+{
+  "model": "library.role",
+  "pk": 8,
+  "fields": {
+    "role_name": "Guest",
+    "description": "Visitor with limited library access."
+  }
+},
+{
+  "model": "library.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$ypv6t9fOkwoojK2gtGcgdX$SZ6lMU3rSA00/ujdtvUNTLqORhGtmpcAtDRPrOpvp9s=",
+    "last_login": "2026-07-09T11:25:28.327Z",
+    "role": 1,
+    "username": "sample_admin",
+    "email": "admin@library.test",
+    "full_name": "Sophea Library Admin",
+    "phone": "012100001",
+    "address": "University Campus, Phnom Penh",
+    "is_active": true,
+    "is_staff": true,
+    "is_superuser": true,
+    "created_at": "2026-07-08T15:15:39.858Z",
+    "updated_at": "2026-07-09T16:10:33.537Z"
+  }
+},
+{
+  "model": "library.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$TOmcUOosBKpz0RtvTUxFal$WFqyxS+s6p47BGDynZ/oIroQljlXa5zmnpdraxAjRXg=",
+    "last_login": null,
+    "role": 3,
+    "username": "sample_librarian",
+    "email": "librarian@library.test",
+    "full_name": "Dara Librarian",
+    "phone": "012100002",
+    "address": "University Campus, Phnom Penh",
+    "is_active": true,
+    "is_staff": true,
+    "is_superuser": false,
+    "created_at": "2026-07-08T15:15:40.016Z",
+    "updated_at": "2026-07-09T16:10:33.689Z"
+  }
+},
+{
+  "model": "library.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$YSyvaautBou7NnXCGECXeq$OtgCk82Bd9zDon/3yJvkLnJcDJaTqkyJsTP9NzOwADo=",
+    "last_login": null,
+    "role": 4,
+    "username": "sample_assistant",
+    "email": "assistant@library.test",
+    "full_name": "Malis Assistant",
+    "phone": "012100003",
+    "address": "University Campus, Phnom Penh",
+    "is_active": true,
+    "is_staff": true,
+    "is_superuser": false,
+    "created_at": "2026-07-08T15:15:40.168Z",
+    "updated_at": "2026-07-09T16:10:33.840Z"
+  }
+},
+{
+  "model": "library.user",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$M85ldEwsZUQJJr1EG0uEpw$8NRoLvgVzY6g6AONogSpAEmWlZJoZqE1Lxt6T+LEFww=",
+    "last_login": "2026-07-09T05:05:22.647Z",
+    "role": 5,
+    "username": "sample_student",
+    "email": "student@library.test",
+    "full_name": "Sokha Student",
+    "phone": "012100004",
+    "address": "University Campus, Phnom Penh",
+    "is_active": true,
+    "is_staff": false,
+    "is_superuser": false,
+    "created_at": "2026-07-08T15:15:40.324Z",
+    "updated_at": "2026-07-09T16:10:33.990Z"
+  }
+},
+{
+  "model": "library.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$sRU7zd59xWK8UYe26c5WB1$g/KNefHqujrL1FdGF04B+hCHp4jQf5dvDTOpfR7j9Vc=",
+    "last_login": null,
+    "role": 6,
+    "username": "sample_teacher",
+    "email": "teacher@library.test",
+    "full_name": "Vanna Teacher",
+    "phone": "012100005",
+    "address": "University Campus, Phnom Penh",
+    "is_active": true,
+    "is_staff": false,
+    "is_superuser": false,
+    "created_at": "2026-07-08T15:15:40.478Z",
+    "updated_at": "2026-07-09T16:10:34.141Z"
+  }
+},
+{
+  "model": "library.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$KD8AR3Q4wrSN0s6Z6yo3hg$fGUdgtd2v7TPS5aD2tX5lxKzfL1b1yNqyW7wPH4KitI=",
+    "last_login": null,
+    "role": 7,
+    "username": "sample_staff",
+    "email": "staff@library.test",
+    "full_name": "Bopha Staff",
+    "phone": "012100006",
+    "address": "University Campus, Phnom Penh",
+    "is_active": true,
+    "is_staff": false,
+    "is_superuser": false,
+    "created_at": "2026-07-08T15:15:40.632Z",
+    "updated_at": "2026-07-09T16:10:34.291Z"
+  }
+},
+{
+  "model": "library.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$d8yJy8ivHC2fSUKNuCQfBW$wf9NF+jq/MICdDJzkhkg1ovs5VTKpha/9bMLhGIFlqc=",
+    "last_login": "2026-07-09T16:13:46.839Z",
+    "role": 1,
+    "username": "admin",
+    "email": "admin@example.com",
+    "full_name": "System Administrator",
+    "phone": "",
+    "address": "",
+    "is_active": true,
+    "is_staff": true,
+    "is_superuser": true,
+    "created_at": "2026-07-09T16:10:29.334Z",
+    "updated_at": "2026-07-09T16:10:29.487Z"
+  }
+},
+{
+  "model": "library.category",
+  "pk": 1,
+  "fields": {
+    "category_name": "Computer Science",
+    "description": "Programming, software, and computing resources."
+  }
+},
+{
+  "model": "library.category",
+  "pk": 2,
+  "fields": {
+    "category_name": "Business",
+    "description": "Management, accounting, and entrepreneurship resources."
+  }
+},
+{
+  "model": "library.category",
+  "pk": 3,
+  "fields": {
+    "category_name": "Engineering",
+    "description": "Engineering theory and practical references."
+  }
+},
+{
+  "model": "library.category",
+  "pk": 4,
+  "fields": {
+    "category_name": "Literature",
+    "description": "Novels, criticism, and language studies."
+  }
+},
+{
+  "model": "library.author",
+  "pk": 1,
+  "fields": {
+    "author_name": "Robert C. Martin",
+    "biography": "Software engineer and author known for Clean Code."
+  }
+},
+{
+  "model": "library.author",
+  "pk": 2,
+  "fields": {
+    "author_name": "Andrew S. Tanenbaum",
+    "biography": "Computer scientist and textbook author."
+  }
+},
+{
+  "model": "library.author",
+  "pk": 3,
+  "fields": {
+    "author_name": "Thomas H. Cormen",
+    "biography": "Computer scientist and algorithms educator."
+  }
+},
+{
+  "model": "library.author",
+  "pk": 4,
+  "fields": {
+    "author_name": "Jane Austen",
+    "biography": "English novelist known for social commentary."
+  }
+},
+{
+  "model": "library.publisher",
+  "pk": 1,
+  "fields": {
+    "publisher_name": "Pearson Education",
+    "address": "London, United Kingdom",
+    "contact_number": "+44-20-7010-2000",
+    "email": "contact@pearson.test"
+  }
+},
+{
+  "model": "library.publisher",
+  "pk": 2,
+  "fields": {
+    "publisher_name": "MIT Press",
+    "address": "Cambridge, Massachusetts",
+    "contact_number": "+1-617-253-5646",
+    "email": "contact@mitpress.test"
+  }
+},
+{
+  "model": "library.publisher",
+  "pk": 3,
+  "fields": {
+    "publisher_name": "University Press",
+    "address": "Phnom Penh, Cambodia",
+    "contact_number": "023100200",
+    "email": "press@university.test"
+  }
+},
+{
+  "model": "library.book",
+  "pk": 1,
+  "fields": {
+    "category": 1,
+    "author": 1,
+    "publisher": 1,
+    "isbn": "9780132350884",
+    "title": "Clean Code",
+    "edition": "1st",
+    "publication_year": 2008,
+    "quantity": 3,
+    "available_quantity": 2,
+    "shelf_location": "CS-A01",
+    "status": "available",
+    "created_at": "2026-07-08T15:15:40.792Z",
+    "updated_at": "2026-07-09T16:10:34.303Z"
+  }
+},
+{
+  "model": "library.book",
+  "pk": 2,
+  "fields": {
+    "category": 1,
+    "author": 2,
+    "publisher": 1,
+    "isbn": "9780132126953",
+    "title": "Computer Networks",
+    "edition": "5th",
+    "publication_year": 2010,
+    "quantity": 2,
+    "available_quantity": 2,
+    "shelf_location": "CS-A02",
+    "status": "available",
+    "created_at": "2026-07-08T15:15:40.794Z",
+    "updated_at": "2026-07-09T16:10:34.304Z"
+  }
+},
+{
+  "model": "library.book",
+  "pk": 3,
+  "fields": {
+    "category": 1,
+    "author": 3,
+    "publisher": 2,
+    "isbn": "9780262046305",
+    "title": "Introduction to Algorithms",
+    "edition": "4th",
+    "publication_year": 2022,
+    "quantity": 1,
+    "available_quantity": 0,
+    "shelf_location": "CS-A03",
+    "status": "borrowed",
+    "created_at": "2026-07-08T15:15:40.795Z",
+    "updated_at": "2026-07-09T16:10:34.304Z"
+  }
+},
+{
+  "model": "library.book",
+  "pk": 4,
+  "fields": {
+    "category": 4,
+    "author": 4,
+    "publisher": 3,
+    "isbn": "9780141439518",
+    "title": "Pride and Prejudice",
+    "edition": "Revised",
+    "publication_year": 2002,
+    "quantity": 2,
+    "available_quantity": 2,
+    "shelf_location": "LIT-B01",
+    "status": "available",
+    "created_at": "2026-07-08T15:15:40.796Z",
+    "updated_at": "2026-07-09T16:10:34.305Z"
+  }
+},
+{
+  "model": "library.member",
+  "pk": 1,
+  "fields": {
+    "user": 4,
+    "member_code": "STU-2026-001",
+    "member_type": "student",
+    "department": "Computer Science",
+    "phone": "012100004",
+    "address": "University Campus, Phnom Penh",
+    "registration_date": "2026-07-08",
+    "status": "active"
+  }
+},
+{
+  "model": "library.member",
+  "pk": 2,
+  "fields": {
+    "user": 5,
+    "member_code": "TCH-2026-001",
+    "member_type": "teacher",
+    "department": "Information Technology",
+    "phone": "012100005",
+    "address": "University Campus, Phnom Penh",
+    "registration_date": "2026-07-08",
+    "status": "active"
+  }
+},
+{
+  "model": "library.member",
+  "pk": 3,
+  "fields": {
+    "user": 6,
+    "member_code": "STF-2026-001",
+    "member_type": "staff",
+    "department": "Administration",
+    "phone": "012100006",
+    "address": "University Campus, Phnom Penh",
+    "registration_date": "2026-07-08",
+    "status": "active"
+  }
+},
+{
+  "model": "library.member",
+  "pk": 4,
+  "fields": {
+    "user": 2,
+    "member_code": "LIB-2026-001",
+    "member_type": "librarian",
+    "department": "Library Services",
+    "phone": "012100002",
+    "address": "University Campus, Phnom Penh",
+    "registration_date": "2026-07-08",
+    "status": "active"
+  }
+},
+{
+  "model": "library.member",
+  "pk": 5,
+  "fields": {
+    "user": 3,
+    "member_code": "LIB-2026-002",
+    "member_type": "librarian",
+    "department": "Library Services",
+    "phone": "012100003",
+    "address": "University Campus, Phnom Penh",
+    "registration_date": "2026-07-08",
+    "status": "active"
+  }
+},
+{
+  "model": "library.borrowrecord",
+  "pk": 1,
+  "fields": {
+    "member": 1,
+    "book": 1,
+    "issued_by": 2,
+    "received_by": null,
+    "borrow_date": "2026-07-07",
+    "due_date": "2026-07-21",
+    "return_date": null,
+    "status": "borrowed"
+  }
+},
+{
+  "model": "library.borrowrecord",
+  "pk": 2,
+  "fields": {
+    "member": 2,
+    "book": 2,
+    "issued_by": 2,
+    "received_by": 3,
+    "borrow_date": "2026-06-14",
+    "due_date": "2026-06-28",
+    "return_date": "2026-07-02",
+    "status": "returned"
+  }
+},
+{
+  "model": "library.borrowrecord",
+  "pk": 3,
+  "fields": {
+    "member": 3,
+    "book": 3,
+    "issued_by": 3,
+    "received_by": null,
+    "borrow_date": "2026-06-19",
+    "due_date": "2026-07-03",
+    "return_date": null,
+    "status": "overdue"
+  }
+},
+{
+  "model": "library.fine",
+  "pk": 1,
+  "fields": {
+    "borrow": 2,
+    "member": 2,
+    "amount": "4.00",
+    "paid_amount": "2.00",
+    "status": "partially_paid",
+    "created_at": "2026-07-08T15:15:40.805Z",
+    "paid_date": null
+  }
+},
+{
+  "model": "library.notification",
+  "pk": 1,
+  "fields": {
+    "member": 1,
+    "title": "Book due date reminder",
+    "message": "Clean Code is due in 12 days.",
+    "notification_type": "due_date",
+    "is_read": false,
+    "created_at": "2026-07-08T15:15:40.806Z"
+  }
+},
+{
+  "model": "library.notification",
+  "pk": 2,
+  "fields": {
+    "member": 3,
+    "title": "Overdue book notice",
+    "message": "Introduction to Algorithms is overdue.",
+    "notification_type": "overdue",
+    "is_read": false,
+    "created_at": "2026-07-08T15:15:40.806Z"
+  }
+},
+{
+  "model": "library.notification",
+  "pk": 3,
+  "fields": {
+    "member": 2,
+    "title": "Outstanding fine",
+    "message": "A balance of 2.00 remains on your late-return fine.",
+    "notification_type": "fine",
+    "is_read": false,
+    "created_at": "2026-07-08T15:15:40.806Z"
+  }
+},
+{
+  "model": "library.report",
+  "pk": 1,
+  "fields": {
+    "report_type": "books",
+    "generated_by": 1,
+    "generated_at": "2026-07-08T15:15:40.806Z",
+    "file_path": "reports/sample_books_report.csv"
+  }
+}
+]

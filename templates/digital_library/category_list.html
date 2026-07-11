@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Categories | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Digital Categories</h1>
+        <p class="text-muted mb-0">Group digital books by material type, department, or collection.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'digital_library:category_create' %}">Add Category</a>
+</div>
+
+{% include "digital_library/digital_tabs.html" %}
+
+<div class="card border-0 shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Name</th><th>Description</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            {% for category in categories %}
+                <tr>
+                    <td class="fw-semibold">{{ category.name }}</td>
+                    <td>{{ category.description|default:"-" }}</td>
+                    <td>{% if category.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'digital_library:category_update' category.pk %}">Edit</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="4" class="text-center text-muted py-4">No digital categories found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

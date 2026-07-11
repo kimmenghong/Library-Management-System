@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Members with Fines</h1>
+    {% include "reports/export_buttons.html" %}
+</div>
+{% include "reports/report_tabs.html" %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Member Code</th><th>Name</th><th>Fine Count</th><th>Total Fines</th><th>Paid</th><th>Balance</th></tr></thead>
+            <tbody>
+                {% for member in members %}
+                    <tr>
+                        <td><code>{{ member.member_code }}</code></td>
+                        <td>{{ member.display_name }}</td>
+                        <td>{{ member.fine_count }}</td>
+                        <td>{{ member.total_fines|default:"0.00" }}</td>
+                        <td>{{ member.total_paid|default:"0.00" }}</td>
+                        <td>{{ member.fine_balance }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No unpaid fines found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

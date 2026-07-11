@@ -1,0 +1,7 @@
+{% load account_tags %}
+<nav class="catalog-tabs mb-3" aria-label="Fine and payment sections">
+    <a href="{% url 'fines:fine_list' %}">Fines</a>
+    {% if user|has_role_permission:"fines.manage_fine" %}<a href="{% url 'fines:fine_create' %}">Create Fine</a>{% endif %}
+    {% if user|has_role_permission:"fines.view_payment" %}<a href="{% url 'fines:payment_list' %}">Payments</a>{% endif %}
+    {% if user|has_role_permission:"fines.receive_payment" %}<a href="{% url 'fines:payment_create' %}">Record Payment</a>{% endif %}
+</nav>

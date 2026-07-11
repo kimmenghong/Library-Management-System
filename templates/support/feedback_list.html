@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback List | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-3">Feedback</h1>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Name</th><th>Email</th><th>Rating</th><th>Message</th><th>Created</th></tr></thead>
+            <tbody>
+                {% for feedback in feedback_entries %}
+                    <tr>
+                        <td>{{ feedback.name }}</td>
+                        <td>{{ feedback.email|default:"-" }}</td>
+                        <td>{{ feedback.rating }} / 5</td>
+                        <td>{{ feedback.message|truncatechars:90 }}</td>
+                        <td>{{ feedback.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No feedback found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

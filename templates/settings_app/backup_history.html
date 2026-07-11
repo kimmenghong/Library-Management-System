@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Backups | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Backup History</h1>
+        <p class="text-muted mb-0">Create database backups, review history, and restore saved copies.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'settings_app:backup_schedule' %}">Schedule</a>
+        <form method="post" action="{% url 'settings_app:backup_create' %}">
+            {% csrf_token %}
+            <button class="btn btn-primary" type="submit">Create Backup</button>
+        </form>
+    </div>
+</div>
+
+{% include "settings_app/settings_tabs.html" %}
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>File</th><th>Size</th><th>Status</th><th>Created By</th><th>Created</th><th>Message</th></tr></thead>
+            <tbody>
+                {% for backup in backups %}
+                    <tr>
+                        <td><code>{{ backup.file_name }}</code></td>
+                        <td>{{ backup.file_size }} bytes</td>
+                        <td><span class="badge status-{{ backup.status }}">{{ backup.get_status_display }}</span></td>
+                        <td>{{ backup.created_by|default:"System" }}</td>
+                        <td>{{ backup.created_at|date:"M d, Y H:i" }}</td>
+                        <td>{{ backup.message|default:"-"|truncatechars:90 }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No backup records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

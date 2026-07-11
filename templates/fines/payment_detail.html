@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Payment {{ payment.pk }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Payment #{{ payment.pk }}</h1>
+        <p class="text-muted mb-0">{{ payment.member.display_name }} &middot; Fine #{{ payment.fine.pk }}</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'fines:payment_list' %}">Back</a>
+        <a class="btn btn-outline-primary" href="{% url 'fines:fine_detail' payment.fine.pk %}">View Fine</a>
+        {% if payment.status == 'completed' and user|has_role_permission:"fines.receive_payment" %}<a class="btn btn-outline-danger" href="{% url 'fines:payment_void' payment.pk %}">Void Payment</a>{% endif %}
+    </div>
+</div>
+{% include "fines/fine_tabs.html" %}
+
+<section class="content-panel">
+    <dl class="row mb-0">
+        <dt class="col-sm-4 col-lg-3">Member</dt><dd class="col-sm-8 col-lg-9">{{ payment.member.display_name }} ({{ payment.member.member_code }})</dd>
+        <dt class="col-sm-4 col-lg-3">Fine</dt><dd class="col-sm-8 col-lg-9"><a href="{% url 'fines:fine_detail' payment.fine.pk %}">Fine #{{ payment.fine.pk }} / {{ payment.fine.get_reason_display }}</a></dd>
+        <dt class="col-sm-4 col-lg-3">Amount</dt><dd class="col-sm-8 col-lg-9"><strong>{{ payment.amount_paid|floatformat:2 }}</strong></dd>
+        <dt class="col-sm-4 col-lg-3">Payment Date</dt><dd class="col-sm-8 col-lg-9">{{ payment.payment_date|date:"M d, Y" }}</dd>
+        <dt class="col-sm-4 col-lg-3">Method</dt><dd class="col-sm-8 col-lg-9">{{ payment.get_payment_method_display }}</dd>
+        <dt class="col-sm-4 col-lg-3">Reference</dt><dd class="col-sm-8 col-lg-9">{{ payment.reference_number|default:"-" }}</dd>
+        <dt class="col-sm-4 col-lg-3">Status</dt><dd class="col-sm-8 col-lg-9"><span class="badge status-{{ payment.status }}">{{ payment.get_status_display }}</span></dd>
+        <dt class="col-sm-4 col-lg-3">Received By</dt><dd class="col-sm-8 col-lg-9">{{ payment.received_by.full_name|default:"-" }}</dd>
+        <dt class="col-sm-4 col-lg-3">Recorded</dt><dd class="col-sm-8 col-lg-9">{{ payment.created_at|date:"M d, Y H:i" }}</dd>
+        <dt class="col-sm-4 col-lg-3">Notes</dt><dd class="col-sm-8 col-lg-9">{{ payment.notes|linebreaksbr|default:"-" }}</dd>
+        {% if payment.status == 'voided' %}
+            <dt class="col-sm-4 col-lg-3">Voided</dt><dd class="col-sm-8 col-lg-9">{{ payment.voided_at|date:"M d, Y H:i" }} by {{ payment.voided_by.full_name|default:"System" }}</dd>
+            <dt class="col-sm-4 col-lg-3">Void Reason</dt><dd class="col-sm-8 col-lg-9">{{ payment.void_reason|linebreaksbr }}</dd>
+        {% endif %}
+    </dl>
+</section>
+{% endblock %}

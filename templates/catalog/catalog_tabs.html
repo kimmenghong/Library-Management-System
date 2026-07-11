@@ -1,0 +1,9 @@
+{% load account_tags %}
+<nav class="catalog-tabs mb-3" aria-label="Catalog sections">
+    <a href="{% url 'catalog:book_list' %}">Books</a>
+    {% if user|has_role_permission:"catalog.manage_copy" %}<a href="{% url 'catalog:bookcopy_list' %}">Copies</a>{% endif %}
+    {% if user|has_role_permission:"catalog.manage_author" %}<a href="{% url 'catalog:author_list' %}">Authors</a>{% endif %}
+    {% if user|has_role_permission:"catalog.manage_publisher" %}<a href="{% url 'catalog:publisher_list' %}">Publishers</a>{% endif %}
+    {% if user|has_role_permission:"catalog.manage_category" %}<a href="{% url 'catalog:category_list' %}">Categories</a>{% endif %}
+    {% if user|has_role_permission:"catalog.manage_location" %}<a href="{% url 'catalog:shelf_list' %}">Shelves</a><a href="{% url 'catalog:location_list' %}">Locations</a>{% endif %}
+</nav>

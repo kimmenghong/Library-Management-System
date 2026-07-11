@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-panel">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h3 mb-1">{{ damaged_book.book_copy.book.title }}</h1>
+            <p class="text-muted mb-0"><code>{{ damaged_book.book_copy.copy_code }}</code> · {{ damaged_book.get_status_display }}</p>
+        </div>
+        <a class="btn btn-primary" href="{% url 'status_tracking:damaged_update' damaged_book.pk %}">Edit</a>
+    </div>
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Member</dt><dd class="col-sm-9">{{ damaged_book.member.display_name|default:"-" }}</dd>
+        <dt class="col-sm-3">Borrow Record</dt><dd class="col-sm-9">{{ damaged_book.borrow_record|default:"-" }}</dd>
+        <dt class="col-sm-3">Severity</dt><dd class="col-sm-9">{{ damaged_book.get_severity_display }}</dd>
+        <dt class="col-sm-3">Estimated Cost</dt><dd class="col-sm-9">{{ damaged_book.estimated_repair_cost }}</dd>
+        <dt class="col-sm-3">Resolved Date</dt><dd class="col-sm-9">{{ damaged_book.resolved_date|default:"-" }}</dd>
+        <dt class="col-sm-3">Description</dt><dd class="col-sm-9">{{ damaged_book.description|linebreaksbr|default:"-" }}</dd>
+        <dt class="col-sm-3">Resolution</dt><dd class="col-sm-9">{{ damaged_book.resolution_notes|linebreaksbr|default:"-" }}</dd>
+    </dl>
+</div>
+{% endblock %}

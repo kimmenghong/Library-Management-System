@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Members | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Members</h1>
+        <p class="text-muted mb-0">University borrowers and library personnel.</p>
+    </div>
+    {% if user|has_role_permission:"members.add_member" %}<a class="btn btn-primary" href="{% url 'members:member_create' %}">Add Member</a>{% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md"><div class="metric-card"><span>Total</span><strong>{{ summary.total }}</strong></div></div>
+    <div class="col-6 col-md"><div class="metric-card metric-success"><span>Active</span><strong>{{ summary.active }}</strong></div></div>
+    <div class="col-6 col-md"><div class="metric-card metric-warning"><span>Pending</span><strong>{{ summary.pending }}</strong></div></div>
+    <div class="col-6 col-md"><div class="metric-card metric-danger"><span>Suspended</span><strong>{{ summary.suspended }}</strong></div></div>
+    <div class="col-6 col-md"><div class="metric-card"><span>Expired</span><strong>{{ summary.expired }}</strong></div></div>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-lg-5"><input class="form-control" name="q" placeholder="Search code, name, email, phone" value="{{ request.GET.q }}"></div>
+    <div class="col-sm-5 col-lg-3">
+        <select class="form-select" name="member_type">
+            <option value="">All member types</option>
+            {% for value,label in member_types %}<option value="{{ value }}" {% if request.GET.member_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-sm-4 col-lg-2">
+        <select class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value,label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-sm-3 col-lg-2 d-flex gap-2">
+        <button class="btn btn-outline-primary flex-grow-1" type="submit">Filter</button>
+        <a class="btn btn-outline-secondary" href="{% url 'members:member_list' %}" title="Clear filters">Clear</a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Code</th><th>Member</th><th>Type</th><th>Contact</th><th>Status</th><th>Expiry</th><th></th></tr></thead>
+            <tbody>
+                {% for member in members %}
+                    <tr>
+                        <td><code>{{ member.member_code }}</code></td>
+                        <td><strong>{{ member.display_name }}</strong><div class="small text-muted">{{ member.user.email }}</div></td>
+                        <td>{{ member.get_member_type_display }}</td>
+                        <td>{{ member.contact_phone|default:"-" }}</td>
+                        <td><span class="badge status-{{ member.status }}">{{ member.get_status_display }}</span></td>
+                        <td>{{ member.expiry_date|date:"M d, Y"|default:"No expiry" }}</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'members:member_detail' member.pk %}">View</a>
+                            {% if user|has_role_permission:"members.edit_member" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'members:member_update' member.pk %}">Edit</a>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted py-4">No members match these filters.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

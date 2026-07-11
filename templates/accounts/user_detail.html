@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block content %}
+<div class="content-panel">
+    <div class="d-flex justify-content-between align-items-start">
+        <div>
+            <h1 class="h3 mb-1">{{ managed_user.full_name }}</h1>
+            <p class="text-muted">{{ managed_user.username }} · {{ managed_user.email }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if user|has_role_permission:"accounts.edit_user" %}<a class="btn btn-primary" href="{% url 'accounts:user_update' managed_user.pk %}">Edit</a>{% endif %}
+            {% if user|has_role_permission:"accounts.delete_user" and user != managed_user %}
+                <form method="post" action="{% url 'accounts:user_toggle_status' managed_user.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger" type="submit" data-confirm="Change this user's active status?">
+                        {% if managed_user.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    <dl class="row mb-0">
+        <dt class="col-sm-3">Role</dt><dd class="col-sm-9">{{ managed_user.role|default:"No role" }}</dd>
+        <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">{{ managed_user.phone|default:"-" }}</dd>
+        <dt class="col-sm-3">Address</dt><dd class="col-sm-9">{{ managed_user.address|default:"-" }}</dd>
+        <dt class="col-sm-3">Active</dt><dd class="col-sm-9">{{ managed_user.is_active|yesno:"Yes,No" }}</dd>
+        <dt class="col-sm-3">Last login</dt><dd class="col-sm-9">{{ managed_user.last_login|date:"M d, Y H:i"|default:"Never" }}</dd>
+        <dt class="col-sm-3">Joined</dt><dd class="col-sm-9">{{ managed_user.date_joined|date:"M d, Y H:i" }}</dd>
+    </dl>
+</div>
+{% endblock %}

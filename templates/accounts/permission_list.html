@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Permissions</h1>
+    {% if user|has_role_permission:"accounts.add_permission" %}<a class="btn btn-primary" href="{% url 'accounts:permission_create' %}">Add Permission</a>{% endif %}
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Name</th><th>Codename</th><th>Module</th><th>Action</th><th></th></tr></thead>
+            <tbody>
+                {% for permission in permissions %}
+                    <tr>
+                        <td>{{ permission.name }}</td>
+                        <td><code>{{ permission.codename }}</code></td>
+                        <td>{{ permission.get_module_display }}</td>
+                        <td>{{ permission.get_action_display }}</td>
+                        <td class="text-end">{% if user|has_role_permission:"accounts.edit_permission" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'accounts:permission_update' permission.pk %}">Edit</a>{% endif %}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-muted py-4">No permissions found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

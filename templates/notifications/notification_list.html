@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}{% if member %}{{ member.display_name }} Notifications{% else %}Notifications{% endif %} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h1 class="h3 mb-0">{% if member %}{{ member.display_name }} Notifications{% else %}Notifications{% endif %}</h1>
+        {% if member %}<div class="small text-muted">{{ member.member_code }}</div>{% endif %}
+    </div>
+    <div class="d-flex gap-2">
+        {% if summary.unread %}<form method="post" action="{% url 'notifications:notification_mark_all_read' %}">{% csrf_token %}<button class="btn btn-outline-primary" type="submit">Mark All Read</button></form>{% endif %}
+        {% if user|has_role_permission:"notifications.send_notification" %}<a class="btn btn-primary" href="{% url 'notifications:notification_create' %}">Create Notification</a>{% endif %}
+    </div>
+</div>
+{% include "notifications/notification_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg"><div class="metric-card"><span>Total</span><strong>{{ summary.total }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-warning"><span>Unread</span><strong>{{ summary.unread }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-success"><span>Read</span><strong>{{ summary.read }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card"><span>Archived</span><strong>{{ summary.archived }}</strong></div></div>
+    <div class="col-6 col-lg"><div class="metric-card metric-accent"><span>Emailed</span><strong>{{ summary.emailed }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    <div class="col-md-6 col-xl-5">
+        <label class="form-label small" for="notification-search">Search</label>
+        <input id="notification-search" class="form-control" name="q" placeholder="Member, title, or message" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-4 col-md-2 col-xl">
+        <label class="form-label small" for="notification-type">Type</label>
+        <select id="notification-type" class="form-select" name="type"><option value="">All types</option>{% for value, label in types %}<option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    </div>
+    <div class="col-4 col-md-2 col-xl">
+        <label class="form-label small" for="notification-status">Status</label>
+        <select id="notification-status" class="form-select" name="status"><option value="">All statuses</option>{% for value, label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    </div>
+    <div class="col-4 col-md-2 col-xl">
+        <label class="form-label small" for="notification-priority">Priority</label>
+        <select id="notification-priority" class="form-select" name="priority"><option value="">All priorities</option>{% for value, label in priorities %}<option value="{{ value }}" {% if request.GET.priority == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    </div>
+    <div class="col-12 d-flex gap-2"><button class="btn btn-outline-primary" type="submit">Apply Filters</button><a class="btn btn-outline-secondary" href="{% if member %}{% url 'notifications:member_history' member.pk %}{% else %}{% url 'notifications:notification_list' %}{% endif %}">Clear</a></div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Member</th><th>Notification</th><th>Type</th><th>Priority</th><th>Channel</th><th>Status</th><th>Email</th><th></th></tr></thead>
+            <tbody>
+                {% for notification in notifications %}
+                    <tr>
+                        <td>{{ notification.recipient.display_name }}<div class="small text-muted">{{ notification.recipient.member_code }}</div></td>
+                        <td><span class="fw-semibold">{{ notification.title }}</span><div class="small text-muted">{{ notification.created_at|date:"M d, Y H:i" }}</div></td>
+                        <td>{{ notification.get_notification_type_display }}</td>
+                        <td>{{ notification.get_priority_display }}</td>
+                        <td>{{ notification.get_channel_display }}</td>
+                        <td><span class="badge status-{{ notification.status }}">{{ notification.get_status_display }}</span></td>
+                        <td>{% if notification.channel == 'in_app' %}-{% elif notification.is_email_sent %}<span class="badge status-sent">Sent</span>{% else %}<span class="badge status-failed">Not sent</span>{% endif %}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'notifications:notification_detail' notification.pk %}">View</a></td>
+                    </tr>
+                {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No notifications match these filters.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

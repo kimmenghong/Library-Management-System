@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Edit Member{% else %}Create Member{% endif %} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <div class="mb-3">
+        <h1 class="h3 mb-1">{% if object %}Edit Member{% else %}Create Member{% endif %}</h1>
+        {% if object %}<p class="text-muted mb-0"><code>{{ object.member_code }}</code> · {{ object.display_name }}</p>{% endif %}
+    </div>
+    <form method="post" class="row g-3" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            <div class="{% if field.name == 'address' or field.name == 'notes' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save Member</button>
+            <a class="btn btn-outline-secondary" href="{% if object %}{% url 'members:member_detail' object.pk %}{% else %}{% url 'members:member_list' %}{% endif %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

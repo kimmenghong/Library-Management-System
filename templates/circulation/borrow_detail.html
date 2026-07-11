@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Loan {{ borrow_record.pk }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+        <h1 class="h3 mb-1">{{ borrow_record.book_copy.book.title }}</h1>
+        <p class="text-muted mb-0">{{ borrow_record.member.display_name }} &middot; <code>{{ borrow_record.book_copy.copy_code }}</code></p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'circulation:borrow_list' %}">Back</a>
+        {% if borrow_record.is_active and user|has_role_permission:"circulation.renew_borrow" %}<a class="btn btn-outline-primary" href="{% url 'circulation:renew_borrow' borrow_record.pk %}">Renew</a>{% endif %}
+        {% if borrow_record.is_active and user|has_role_permission:"circulation.return_book" %}<a class="btn btn-success" href="{% url 'circulation:return_borrow' borrow_record.pk %}">Return</a>{% endif %}
+    </div>
+</div>
+{% include "circulation/circulation_tabs.html" %}
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="content-panel h-100">
+            <h2 class="h5 mb-3">Loan Information</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Member</dt><dd class="col-sm-8">{{ borrow_record.member.display_name }} ({{ borrow_record.member.member_code }})</dd>
+                <dt class="col-sm-4">Book Copy</dt><dd class="col-sm-8"><code>{{ borrow_record.book_copy.copy_code }}</code></dd>
+                <dt class="col-sm-4">Borrow Date</dt><dd class="col-sm-8">{{ borrow_record.borrow_date|date:"M d, Y" }}</dd>
+                <dt class="col-sm-4">Due Date</dt><dd class="col-sm-8">{{ borrow_record.due_date|date:"M d, Y" }}</dd>
+                <dt class="col-sm-4">Return Date</dt><dd class="col-sm-8">{{ borrow_record.return_date|date:"M d, Y"|default:"-" }}</dd>
+                <dt class="col-sm-4">Status</dt><dd class="col-sm-8"><span class="badge status-{{ borrow_record.status }}">{{ borrow_record.get_status_display }}</span></dd>
+                <dt class="col-sm-4">Renewals</dt><dd class="col-sm-8">{{ borrow_record.renewal_count }}</dd>
+                <dt class="col-sm-4">Days Late</dt><dd class="col-sm-8">{{ borrow_record.days_late }}</dd>
+                <dt class="col-sm-4">Fine Rate</dt><dd class="col-sm-8">{{ borrow_record.fine_rate_per_day|floatformat:2 }} per day</dd>
+                <dt class="col-sm-4">Estimated Fine</dt><dd class="col-sm-8">{{ borrow_record.estimated_fine|floatformat:2 }}</dd>
+                <dt class="col-sm-4">Issued By</dt><dd class="col-sm-8">{{ borrow_record.borrowed_by.get_full_name|default:borrow_record.borrowed_by.username|default:"-" }}</dd>
+                <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">{{ borrow_record.notes|linebreaksbr|default:"-" }}</dd>
+            </dl>
+        </section>
+    </div>
+    <div class="col-lg-5">
+        <section class="content-panel mb-3">
+            <h2 class="h5 mb-3">Renewals</h2>
+            <ul class="list-group list-group-flush">
+                {% for renewal in borrow_record.renewals.all %}<li class="list-group-item px-0"><strong>{{ renewal.new_due_date|date:"M d, Y" }}</strong><div class="small text-muted">Extended from {{ renewal.old_due_date|date:"M d, Y" }}</div></li>
+                {% empty %}<li class="list-group-item px-0 text-muted">No renewals recorded.</li>{% endfor %}
+            </ul>
+        </section>
+        <section class="content-panel">
+            <h2 class="h5 mb-3">Fines</h2>
+            <ul class="list-group list-group-flush">
+                {% for fine in borrow_record.fines.all %}<li class="list-group-item px-0 d-flex justify-content-between gap-2"><span>{{ fine.get_reason_display }}<span class="badge status-{{ fine.status }} ms-1">{{ fine.get_status_display }}</span></span><strong>{{ fine.amount|floatformat:2 }}</strong></li>
+                {% empty %}<li class="list-group-item px-0 text-muted">No fines recorded.</li>{% endfor %}
+            </ul>
+        </section>
+    </div>
+</div>
+{% endblock %}

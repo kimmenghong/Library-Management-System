@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Book Reviews | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Book Reviews</h1>
+        <p class="text-muted mb-0">Track member review history, ratings, and moderation status.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'reviews:create' %}">Add Review</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Book</th><th>Member</th><th>Rating</th><th>Status</th><th>Created</th><th></th></tr></thead>
+            <tbody>
+                {% for review in reviews %}
+                    <tr>
+                        <td class="fw-semibold">{{ review.book.title }}</td>
+                        <td>{{ review.member }}</td>
+                        <td>{{ review.rating }} / 5</td>
+                        <td><span class="badge status-{{ review.status }}">{{ review.get_status_display }}</span></td>
+                        <td>{{ review.created_at|date:"M d, Y" }}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'reviews:moderate' review.pk %}">Moderate</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No reviews found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Django runtime files
+db.sqlite3
+db.sqlite3-journal
+library.sqlite3
+library.sqlite3-journal
+media/
+staticfiles/
+logs/
+*.log
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Tests and tooling
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Release archives
+*.zip
+*.tar.gz

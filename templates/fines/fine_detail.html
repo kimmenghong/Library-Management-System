@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Fine {{ fine.pk }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div>
+        <h1 class="h3 mb-1">Fine #{{ fine.pk }}</h1>
+        <p class="text-muted mb-0">{{ fine.member.display_name }} &middot; {{ fine.get_reason_display }}</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'fines:fine_list' %}">Back</a>
+        {% if fine.is_outstanding and not fine.payments.exists and user|has_role_permission:"fines.manage_fine" %}<a class="btn btn-outline-primary" href="{% url 'fines:fine_update' fine.pk %}">Edit</a>{% endif %}
+        {% if fine.is_outstanding and user|has_role_permission:"fines.manage_fine" %}<a class="btn btn-outline-danger" href="{% url 'fines:fine_waive' fine.pk %}">Waive</a>{% endif %}
+        {% if fine.is_outstanding and user|has_role_permission:"fines.receive_payment" %}<a class="btn btn-success" href="{% url 'fines:payment_create_for_fine' fine.pk %}">Record Payment</a>{% endif %}
+    </div>
+</div>
+{% include "fines/fine_tabs.html" %}
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <section class="content-panel h-100">
+            <h2 class="h5 mb-3">Fine Details</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Member</dt><dd class="col-sm-8">{{ fine.member.display_name }} ({{ fine.member.member_code }})</dd>
+                <dt class="col-sm-4">Reason</dt><dd class="col-sm-8">{{ fine.get_reason_display }}</dd>
+                <dt class="col-sm-4">Assessed</dt><dd class="col-sm-8">{{ fine.amount|floatformat:2 }}</dd>
+                <dt class="col-sm-4">Paid</dt><dd class="col-sm-8">{{ fine.paid_amount|floatformat:2 }}</dd>
+                <dt class="col-sm-4">Balance</dt><dd class="col-sm-8"><strong>{{ fine.balance|floatformat:2 }}</strong></dd>
+                <dt class="col-sm-4">Status</dt><dd class="col-sm-8"><span class="badge status-{{ fine.status }}">{{ fine.get_status_display }}</span></dd>
+                <dt class="col-sm-4">Borrow Record</dt><dd class="col-sm-8">{% if fine.borrow_record %}<a href="{% url 'circulation:borrow_detail' fine.borrow_record.pk %}">{{ fine.borrow_record.book_copy.book.title }} / {{ fine.borrow_record.book_copy.copy_code }}</a>{% else %}-{% endif %}</dd>
+                <dt class="col-sm-4">Created</dt><dd class="col-sm-8">{{ fine.created_at|date:"M d, Y H:i" }}</dd>
+                <dt class="col-sm-4">Created By</dt><dd class="col-sm-8">{{ fine.created_by.full_name|default:"-" }}</dd>
+                <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ fine.description|linebreaksbr|default:"-" }}</dd>
+                {% if fine.status == 'waived' %}
+                    <dt class="col-sm-4">Waived</dt><dd class="col-sm-8">{{ fine.waived_at|date:"M d, Y H:i" }} by {{ fine.waived_by.full_name|default:"System" }}</dd>
+                    <dt class="col-sm-4">Waiver Reason</dt><dd class="col-sm-8">{{ fine.waiver_reason|linebreaksbr }}</dd>
+                {% endif %}
+            </dl>
+        </section>
+    </div>
+    <div class="col-lg-6">
+        <section class="content-panel h-100">
+            <h2 class="h5 mb-3">Payment History</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                        {% for payment in fine.payments.all %}
+                            <tr>
+                                <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                <td>{{ payment.amount_paid|floatformat:2 }}</td>
+                                <td>{{ payment.get_payment_method_display }}</td>
+                                <td><span class="badge status-{{ payment.status }}">{{ payment.get_status_display }}</span></td>
+                                <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'fines:payment_detail' payment.pk %}">View</a></td>
+                            </tr>
+                        {% empty %}<tr><td colspan="5" class="text-center text-muted py-3">No payments recorded.</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

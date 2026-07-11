@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Support Tickets | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Support Tickets</h1>
+        <p class="text-muted mb-0">Manage user support requests and responses.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'support:ticket_create' %}">New Ticket</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Subject</th><th>User</th><th>Priority</th><th>Status</th><th>Assigned To</th><th></th></tr></thead>
+            <tbody>
+                {% for ticket in tickets %}
+                    <tr>
+                        <td class="fw-semibold">{{ ticket.subject }}</td>
+                        <td>{{ ticket.user|default:"Guest" }}</td>
+                        <td>{{ ticket.get_priority_display }}</td>
+                        <td><span class="badge status-{{ ticket.status }}">{{ ticket.get_status_display }}</span></td>
+                        <td>{{ ticket.assigned_to|default:"-" }}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'support:ticket_update' ticket.pk %}">Update</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No support tickets found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

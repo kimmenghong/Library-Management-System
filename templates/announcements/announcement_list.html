@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Announcements | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Announcements</h1>
+        <p class="text-muted mb-0">Publish notices to selected roles and show them on the dashboard.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'announcements:create' %}">Create Announcement</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Title</th><th>Status</th><th>Publish Date</th><th>Target Roles</th><th>Email</th><th></th></tr></thead>
+            <tbody>
+                {% for announcement in announcements %}
+                    <tr>
+                        <td><a class="fw-semibold text-decoration-none" href="{% url 'announcements:detail' announcement.pk %}">{{ announcement.title }}</a></td>
+                        <td><span class="badge status-{{ announcement.status }}">{{ announcement.get_status_display }}</span></td>
+                        <td>{{ announcement.publish_date|date:"M d, Y H:i" }}</td>
+                        <td>
+                            {% for role in announcement.target_roles.all %}
+                                <span class="badge text-bg-light border">{{ role.name }}</span>
+                            {% empty %}
+                                <span class="text-muted">All users</span>
+                            {% endfor %}
+                        </td>
+                        <td>{% if announcement.email_sent %}<span class="badge text-bg-success">Sent</span>{% elif announcement.send_email %}<span class="badge text-bg-warning">Pending</span>{% else %}<span class="text-muted">No</span>{% endif %}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'announcements:update' announcement.pk %}">Edit</a>
+                            <form method="post" action="{% url 'announcements:publish' announcement.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-primary" type="submit">Publish</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No announcements found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Damaged Books</h1>
+    <a class="btn btn-primary" href="{% url 'status_tracking:damaged_create' %}">Report Damage</a>
+</div>
+{% include "status_tracking/status_tabs.html" %}
+<form class="row g-2 mb-3">
+    <div class="col-md-8"><input class="form-control" name="q" placeholder="Search member, book, or copy" value="{{ request.GET.q }}"></div>
+    <div class="col-md-2">
+        <select class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value,label in statuses %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Filter</button></div>
+</form>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Book Copy</th><th>Member</th><th>Severity</th><th>Cost</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for item in damaged_books %}
+                    <tr>
+                        <td>{{ item.book_copy.book.title }}<div class="small"><code>{{ item.book_copy.copy_code }}</code></div></td>
+                        <td>{{ item.member.display_name|default:"-" }}</td>
+                        <td>{{ item.get_severity_display }}</td>
+                        <td>{{ item.estimated_repair_cost }}</td>
+                        <td><span class="badge status-{{ item.status }}">{{ item.get_status_display }}</span></td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'status_tracking:damaged_detail' item.pk %}">View</a>
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'status_tracking:damaged_update' item.pk %}">Edit</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">No damaged book records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

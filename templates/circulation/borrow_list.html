@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Loans | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Loans</h1>
+    {% if user|has_role_permission:"circulation.create_borrow" %}<a class="btn btn-primary" href="{% url 'circulation:borrow_create' %}">Issue Book</a>{% endif %}
+</div>
+{% include "circulation/circulation_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="metric-card"><span>Total</span><strong>{{ summary.total }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-accent"><span>Active</span><strong>{{ summary.active }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-danger"><span>Overdue</span><strong>{{ summary.overdue }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-success"><span>Returned</span><strong>{{ summary.returned }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    <div class="col-md-8">
+        <label class="form-label small" for="loan-search">Search</label>
+        <input id="loan-search" class="form-control" name="q" placeholder="Member, title, ISBN, copy, or book code" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label small" for="loan-status">Status</label>
+        <select id="loan-status" class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+        <a class="btn btn-outline-secondary" href="{% url 'circulation:borrow_list' %}">Clear</a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Member</th><th>Book Copy</th><th>Borrowed</th><th>Due</th><th>Status</th><th>Fine Exposure</th><th></th></tr></thead>
+            <tbody>
+                {% for record in borrow_records %}
+                    <tr>
+                        <td>{{ record.member.display_name }}<div class="small text-muted">{{ record.member.member_code }}</div></td>
+                        <td>{{ record.book_copy.book.title }}<div class="small"><code>{{ record.book_copy.copy_code }}</code></div></td>
+                        <td>{{ record.borrow_date|date:"M d, Y" }}</td>
+                        <td class="{% if record.status == 'overdue' %}text-danger fw-semibold{% endif %}">{{ record.due_date|date:"M d, Y" }}</td>
+                        <td><span class="badge status-{{ record.status }}">{{ record.get_status_display }}</span></td>
+                        <td>{{ record.estimated_fine|floatformat:2 }}</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'circulation:borrow_detail' record.pk %}">View</a>
+                            {% if record.is_active and user|has_role_permission:"circulation.renew_borrow" %}<a class="btn btn-sm btn-outline-primary" href="{% url 'circulation:renew_borrow' record.pk %}">Renew</a>{% endif %}
+                            {% if record.is_active and user|has_role_permission:"circulation.return_book" %}<a class="btn btn-sm btn-outline-success" href="{% url 'circulation:return_borrow' record.pk %}">Return</a>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No loans match these filters.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

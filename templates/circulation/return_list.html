@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Return History | Library Management System{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Return History</h1>
+{% include "circulation/circulation_tabs.html" %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Member</th><th>Book Copy</th><th>Returned</th><th>Condition</th><th>Late Fine</th><th>Processed By</th></tr></thead>
+            <tbody>
+                {% for item in returns %}
+                    <tr>
+                        <td>{{ item.borrow_record.member.display_name }}<div class="small text-muted">{{ item.borrow_record.member.member_code }}</div></td>
+                        <td>{{ item.borrow_record.book_copy.book.title }}<div class="small"><code>{{ item.borrow_record.book_copy.copy_code }}</code></div></td>
+                        <td>{{ item.return_date|date:"M d, Y" }}</td>
+                        <td><span class="badge status-{{ item.book_condition }}">{{ item.get_book_condition_display }}</span></td>
+                        <td>{{ item.fine_amount|floatformat:2 }}</td>
+                        <td>{{ item.returned_by.get_full_name|default:item.returned_by.username|default:"-" }}</td>
+                    </tr>
+                {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">No returns recorded.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

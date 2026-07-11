@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}FAQs | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">FAQ Management</h1>
+        <p class="text-muted mb-0">Maintain help center questions and answers.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'support:faq_create' %}">Add FAQ</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead><tr><th>Question</th><th>Category</th><th>Order</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+            {% for faq in faqs %}
+                <tr>
+                    <td class="fw-semibold">{{ faq.question }}</td>
+                    <td>{{ faq.category|default:"-" }}</td>
+                    <td>{{ faq.display_order }}</td>
+                    <td>{% if faq.is_active %}<span class="badge text-bg-success">Active</span>{% else %}<span class="badge text-bg-secondary">Inactive</span>{% endif %}</td>
+                    <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'support:faq_update' faq.pk %}">Edit</a></td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No FAQs found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

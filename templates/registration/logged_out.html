@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-shell">
+    <div class="auth-card shadow-sm text-center">
+        <h1 class="h4">You are logged out</h1>
+        <a class="btn btn-primary mt-3" href="{% url 'accounts:login' %}">Login again</a>
+    </div>
+</div>
+{% endblock %}

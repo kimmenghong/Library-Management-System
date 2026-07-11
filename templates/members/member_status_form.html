@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Update Membership Status | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-1">Update Membership Status</h1>
+    <p class="text-muted mb-3"><code>{{ object.member_code }}</code> · {{ object.display_name }}</p>
+    <form method="post" class="row g-3" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            <div class="{% if field.name == 'notes' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Update Status</button>
+            <a class="btn btn-outline-secondary" href="{% url 'members:member_detail' object.pk %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

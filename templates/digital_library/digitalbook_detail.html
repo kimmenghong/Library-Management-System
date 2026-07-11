@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}{{ digital_book.title }} | Digital Library{% endblock %}
+
+{% block content %}
+<div class="content-panel mb-3">
+    <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+            <h1 class="h3 mb-1">{{ digital_book.title }}</h1>
+            <p class="text-muted mb-0">{{ digital_book.category|default:"Uncategorized" }} · {{ digital_book.get_file_type_display }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-primary" href="{% url 'digital_library:update' digital_book.pk %}">Edit</a>
+            <a class="btn btn-primary" href="{% url 'digital_library:download' digital_book.pk %}">Download</a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="content-panel h-100">
+            <h2 class="h5">Description</h2>
+            <p class="mb-0">{{ digital_book.description|linebreaksbr|default:"No description added." }}</p>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="content-panel h-100">
+            <h2 class="h5">Access Details</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Linked Book</dt><dd class="col-sm-8">{{ digital_book.book|default:"-" }}</dd>
+                <dt class="col-sm-4">Public</dt><dd class="col-sm-8">{{ digital_book.is_public|yesno:"Yes,No" }}</dd>
+                <dt class="col-sm-4">Active</dt><dd class="col-sm-8">{{ digital_book.is_active|yesno:"Yes,No" }}</dd>
+                <dt class="col-sm-4">Downloads</dt><dd class="col-sm-8">{{ digital_book.download_count }}</dd>
+                <dt class="col-sm-4">Allowed Roles</dt>
+                <dd class="col-sm-8">
+                    {% for role in digital_book.allowed_roles.all %}
+                        <span class="badge text-bg-light border">{{ role.name }}</span>
+                    {% empty %}
+                        <span class="text-muted">No role restriction</span>
+                    {% endfor %}
+                </dd>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

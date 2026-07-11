@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Borrowing Policies | Library Management System{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Borrowing Policies</h1>
+{% include "circulation/circulation_tabs.html" %}
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Member Type</th><th>Book Limit</th><th>Loan Days</th><th>Renewal</th><th>Fine / Day</th><th>Pickup Window</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for policy in policies %}
+                    <tr>
+                        <td class="fw-semibold">{{ policy.get_member_type_display }}</td>
+                        <td>{{ policy.max_books }}</td>
+                        <td>{{ policy.loan_period_days }}</td>
+                        <td>{{ policy.max_renewals }} &times; {{ policy.renewal_days }} days</td>
+                        <td>{{ policy.fine_per_day|floatformat:2 }}</td>
+                        <td>{{ policy.reservation_expiry_days }} days</td>
+                        <td><span class="badge status-{% if policy.is_active %}active{% else %}cancelled{% endif %}">{% if policy.is_active %}Active{% else %}Disabled{% endif %}</span></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'circulation:policy_update' policy.pk %}">Edit</a></td>
+                    </tr>
+                {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No borrowing policies configured.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

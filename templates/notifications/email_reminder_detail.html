@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Email Attempt {{ email_reminder.pk }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div><h1 class="h3 mb-1">Email Attempt #{{ email_reminder.attempt_number }}</h1><p class="text-muted mb-0">{{ email_reminder.member.display_name }} &middot; {{ email_reminder.subject }}</p></div>
+    <div class="d-flex gap-2"><a class="btn btn-outline-secondary" href="{% url 'notifications:email_reminder_list' %}">Back</a>{% if email_reminder.notification %}<a class="btn btn-outline-primary" href="{% url 'notifications:notification_detail' email_reminder.notification.pk %}">View Notification</a>{% endif %}{% if email_reminder.status == 'failed' and user|has_role_permission:"notifications.send_notification" and email_reminder.notification %}<form method="post" action="{% url 'notifications:email_reminder_retry' email_reminder.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Retry Email</button></form>{% endif %}</div>
+</div>
+{% include "notifications/notification_tabs.html" %}
+<section class="content-panel"><dl class="row mb-0">
+    <dt class="col-sm-4 col-lg-3">Status</dt><dd class="col-sm-8 col-lg-9"><span class="badge status-{{ email_reminder.status }}">{{ email_reminder.get_status_display }}</span></dd>
+    <dt class="col-sm-4 col-lg-3">Recipient</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.email_to|default:"No email address" }}</dd>
+    <dt class="col-sm-4 col-lg-3">Type</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.get_reminder_type_display }}</dd>
+    <dt class="col-sm-4 col-lg-3">Attempted</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.attempted_at|date:"M d, Y H:i:s" }}</dd>
+    <dt class="col-sm-4 col-lg-3">Sent</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.sent_at|date:"M d, Y H:i:s"|default:"-" }}</dd>
+    <dt class="col-sm-4 col-lg-3">Subject</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.subject }}</dd>
+    <dt class="col-sm-4 col-lg-3">Message</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.message|linebreaksbr }}</dd>
+    <dt class="col-sm-4 col-lg-3">Error</dt><dd class="col-sm-8 col-lg-9">{{ email_reminder.error_message|linebreaksbr|default:"-" }}</dd>
+</dl></section>
+{% endblock %}

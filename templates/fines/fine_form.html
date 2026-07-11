@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Edit Fine{% else %}Create Fine{% endif %} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="content-panel">
+    <h1 class="h3 mb-3">{% if object %}Edit Fine #{{ object.pk }}{% else %}Create Fine{% endif %}</h1>
+    {% include "fines/fine_tabs.html" %}
+    <form method="post" class="row g-3" novalidate>
+        {% csrf_token %}
+        {% if selected_borrow %}<input type="hidden" name="borrow_context" value="{{ selected_borrow.pk }}">{% endif %}
+        {% if form.non_field_errors %}<div class="col-12"><div class="alert alert-danger mb-0">{{ form.non_field_errors }}</div></div>{% endif %}
+        {% for field in form %}
+            <div class="{% if field.name == 'description' %}col-12{% else %}col-md-6{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endfor %}
+        <div class="col-12 d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save Fine</button>
+            <a class="btn btn-outline-secondary" href="{% if object %}{% url 'fines:fine_detail' object.pk %}{% else %}{% url 'fines:fine_list' %}{% endif %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

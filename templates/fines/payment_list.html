@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load account_tags %}
+
+{% block title %}Payment History | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h1 class="h3 mb-0">Payment History</h1>
+    {% if user|has_role_permission:"fines.receive_payment" %}<a class="btn btn-primary" href="{% url 'fines:payment_create' %}">Record Payment</a>{% endif %}
+</div>
+{% include "fines/fine_tabs.html" %}
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="metric-card"><span>Total Records</span><strong>{{ summary.total }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-success"><span>Completed</span><strong>{{ summary.completed }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-accent"><span>Collected</span><strong>{{ summary.collected|floatformat:2 }}</strong></div></div>
+    <div class="col-6 col-lg-3"><div class="metric-card metric-warning"><span>Voided</span><strong>{{ summary.voided }}</strong></div></div>
+</div>
+
+<form class="row g-3 mb-4 content-panel" method="get" novalidate>
+    <div class="col-md-8">
+        <label class="form-label small" for="payment-search">Search</label>
+        <input id="payment-search" class="form-control" name="q" placeholder="Member or reference number" value="{{ request.GET.q }}">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label small" for="payment-status">Status</label>
+        <select id="payment-status" class="form-select" name="status">
+            <option value="">All statuses</option>
+            {% for value, label in statuses %}<option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+    </div>
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-outline-primary" type="submit">Apply Filters</button>
+        <a class="btn btn-outline-secondary" href="{% url 'fines:payment_list' %}">Clear</a>
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle data-table mb-0">
+            <thead><tr><th>Date</th><th>Member</th><th>Fine</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for payment in payments %}
+                    <tr>
+                        <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                        <td>{{ payment.member.display_name }}<div class="small text-muted">{{ payment.member.member_code }}</div></td>
+                        <td><a href="{% url 'fines:fine_detail' payment.fine.pk %}">#{{ payment.fine.pk }}</a></td>
+                        <td>{{ payment.amount_paid|floatformat:2 }}</td>
+                        <td>{{ payment.get_payment_method_display }}</td>
+                        <td>{{ payment.reference_number|default:"-" }}</td>
+                        <td><span class="badge status-{{ payment.status }}">{{ payment.get_status_display }}</span></td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'fines:payment_detail' payment.pk %}">View</a></td>
+                    </tr>
+                {% empty %}<tr><td colspan="8" class="text-center text-muted py-4">No payments match these filters.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

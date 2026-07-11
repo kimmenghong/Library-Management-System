@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Library Management System logo">
+  <rect width="64" height="64" rx="14" fill="#0f766e"/>
+  <path d="M16 17h12c3.2 0 5.8 2.6 5.8 5.8V48c-1.4-1.8-3.5-2.8-5.8-2.8H16V17z" fill="#ffffff"/>
+  <path d="M36 22.8c0-3.2 2.6-5.8 5.8-5.8H48v28.2h-6.2c-2.3 0-4.4 1-5.8 2.8V22.8z" fill="#dbeafe"/>
+  <path d="M21 24h7M21 31h7M41 24h5M41 31h5" stroke="#0f766e" stroke-width="2" stroke-linecap="round"/>
+</svg>

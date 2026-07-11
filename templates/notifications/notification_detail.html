@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{ notification.title }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+    <div><h1 class="h3 mb-1">{{ notification.title }}</h1><p class="text-muted mb-0">{{ notification.recipient.display_name }} &middot; {{ notification.get_notification_type_display }}</p></div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'notifications:notification_list' %}">Back</a>
+        {% if notification.status == 'unread' %}<form method="post" action="{% url 'notifications:notification_mark_read' notification.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">Mark Read</button></form>{% endif %}
+        {% if notification.status != 'archived' %}<form method="post" action="{% url 'notifications:notification_archive' notification.pk %}">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">Archive</button></form>{% endif %}
+    </div>
+</div>
+{% include "notifications/notification_tabs.html" %}
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <section class="content-panel h-100">
+            <dl class="row mb-0">
+                <dt class="col-sm-4">Message</dt><dd class="col-sm-8">{{ notification.message|linebreaksbr }}</dd>
+                <dt class="col-sm-4">Channel</dt><dd class="col-sm-8">{{ notification.get_channel_display }}</dd>
+                <dt class="col-sm-4">Priority</dt><dd class="col-sm-8">{{ notification.get_priority_display }}</dd>
+                <dt class="col-sm-4">Status</dt><dd class="col-sm-8"><span class="badge status-{{ notification.status }}">{{ notification.get_status_display }}</span></dd>
+                <dt class="col-sm-4">Created</dt><dd class="col-sm-8">{{ notification.created_at|date:"M d, Y H:i" }}</dd>
+                <dt class="col-sm-4">Created By</dt><dd class="col-sm-8">{{ notification.created_by.full_name|default:"System" }}</dd>
+                <dt class="col-sm-4">Read</dt><dd class="col-sm-8">{{ notification.read_at|date:"M d, Y H:i"|default:"-" }}</dd>
+                <dt class="col-sm-4">Email Sent</dt><dd class="col-sm-8">{{ notification.email_sent_at|date:"M d, Y H:i"|default:"-" }}</dd>
+                <dt class="col-sm-4">Related Loan</dt><dd class="col-sm-8">{% if notification.related_borrow_record %}<a href="{% url 'circulation:borrow_detail' notification.related_borrow_record.pk %}">{{ notification.related_borrow_record.book_copy.book.title }}</a>{% else %}-{% endif %}</dd>
+            </dl>
+        </section>
+    </div>
+    <div class="col-lg-5">
+        <section class="content-panel h-100">
+            <h2 class="h5 mb-3">Email Attempts</h2>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Attempt</th><th>Status</th><th>Time</th><th></th></tr></thead><tbody>
+                {% for attempt in notification.email_logs.all %}<tr><td>#{{ attempt.attempt_number }}</td><td><span class="badge status-{{ attempt.status }}">{{ attempt.get_status_display }}</span></td><td>{{ attempt.attempted_at|date:"M d, H:i" }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{% url 'notifications:email_reminder_detail' attempt.pk %}">View</a></td></tr>
+                {% empty %}<tr><td colspan="4" class="text-center text-muted py-3">No email delivery attempts.</td></tr>{% endfor %}
+            </tbody></table></div>
+        </section>
+    </div>
+</div>
+{% endblock %}

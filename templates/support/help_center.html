@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Help Center | Library Management System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="h3 mb-1">Help Center</h1>
+        <p class="text-muted mb-0">FAQs, support tickets, and feedback for library users.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'support:ticket_create' %}">Contact Support</a>
+        <a class="btn btn-primary" href="{% url 'support:feedback' %}">Feedback</a>
+    </div>
+</div>
+
+<div class="catalog-tabs mb-3">
+    <a href="{% url 'support:help' %}">Help</a>
+    <a href="{% url 'support:ticket_list' %}">Tickets</a>
+    <a href="{% url 'support:faq_list' %}">FAQ Admin</a>
+    <a href="{% url 'support:feedback_list' %}">Feedback</a>
+</div>
+
+<div class="row g-3">
+    {% for faq in faqs %}
+        <div class="col-lg-6">
+            <div class="content-panel h-100">
+                <div class="small text-muted mb-1">{{ faq.category|default:"General" }}</div>
+                <h2 class="h5">{{ faq.question }}</h2>
+                <p class="mb-0">{{ faq.answer|linebreaksbr }}</p>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12"><div class="content-panel text-muted">No FAQs are available yet.</div></div>
+    {% endfor %}
+</div>
+{% endblock %}

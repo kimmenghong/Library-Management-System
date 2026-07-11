@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Book Locations</h1>
+    <a class="btn btn-primary" href="{% url 'catalog:location_create' %}">Add Location</a>
+</div>
+{% include "catalog/catalog_tabs.html" %}
+<form class="row g-2 mb-3">
+    <div class="col-md-7"><input class="form-control" name="q" placeholder="Search label, shelf, aisle, row, or column" value="{{ request.GET.q }}"></div>
+    <div class="col-md-3">
+        <select class="form-select" name="shelf">
+            <option value="">All shelves</option>
+            {% for shelf in shelves %}
+                <option value="{{ shelf.id }}" {% if request.GET.shelf == shelf.id|stringformat:"s" %}selected{% endif %}>{{ shelf }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Filter</button></div>
+</form>
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Label</th><th>Shelf</th><th>Aisle</th><th>Row</th><th>Column</th><th>Copies</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                {% for location in locations %}
+                    <tr>
+                        <td>{{ location.label }}</td>
+                        <td>{{ location.shelf }}</td>
+                        <td>{{ location.aisle|default:"-" }}</td>
+                        <td>{{ location.row|default:"-" }}</td>
+                        <td>{{ location.column|default:"-" }}</td>
+                        <td>{{ location.copy_count }}</td>
+                        <td>{{ location.is_active|yesno:"Active,Inactive" }}</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'catalog:location_update' location.pk %}">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'catalog:location_delete' location.pk %}">Delete</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No locations found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}
