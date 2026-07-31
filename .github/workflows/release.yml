@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v1.0.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  github-release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve release tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "RELEASE_TAG=${{ inputs.tag }}" >> "$GITHUB_ENV"
+          else
+            echo "RELEASE_TAG=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Create release notes fallback
+        run: |
+          mkdir -p /tmp/library-release
+          notes_file="docs/release/${RELEASE_TAG}.md"
+          if [ -f "$notes_file" ]; then
+            cp "$notes_file" /tmp/library-release/notes.md
+          else
+            {
+              echo "# ${RELEASE_TAG}"
+              echo
+              echo "Automated release for the Library Management System."
+              echo
+              echo "See CHANGELOG.md and README.md for project details."
+            } > /tmp/library-release/notes.md
+          fi
+
+      - name: Create or update GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "Library Management System ${RELEASE_TAG}" \
+              --notes-file /tmp/library-release/notes.md
+          else
+            gh release create "$RELEASE_TAG" \
+              --title "Library Management System ${RELEASE_TAG}" \
+              --notes-file /tmp/library-release/notes.md
+          fi
+

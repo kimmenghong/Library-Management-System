@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Software Engineering book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0369a1"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <rect x="72" y="112" width="216" height="154" rx="18" fill="rgba(255,255,255,.12)" stroke="#fff" stroke-width="12"/>
+  <path d="M102 160h156M102 202h92M102 236h128" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+  <path d="M92 300l176-210" stroke="rgba(255,255,255,.3)" stroke-width="10" stroke-linecap="round"/>
+  <text x="38" y="352" fill="#fff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Software</text>
+  <text x="38" y="400" fill="#fff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Engineering</text>
+  <text x="38" y="438" fill="#ccfbf1" font-family="Arial, sans-serif" font-size="18">Development</text>
+</svg>

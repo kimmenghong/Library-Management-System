@@ -308,33 +308,155 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    document.querySelectorAll("[data-public-book-search]").forEach((input) => {
-        const list = document.querySelector(input.dataset.publicBookSearch);
-        if (!list) {
+    const categoryStyles = {
+        Adventure: ["#0369a1", "#f59e0b"],
+        Biography: ["#374151", "#b45309"],
+        Comedy: ["#f97316", "#ec4899"],
+        "Computer Science": ["#1d4ed8", "#0f766e"],
+        "Children's Literature": ["#ec4899", "#22c55e"],
+        Drama: ["#7c2d12", "#be185d"],
+        Fantasy: ["#581c87", "#047857"],
+        Fiction: ["#1e40af", "#7c3aed"],
+        Finance: ["#065f46", "#0ea5e9"],
+        History: ["#713f12", "#334155"],
+        Horror: ["#111827", "#7f1d1d"],
+        Memoir: ["#4b5563", "#2563eb"],
+        Mystery: ["#312e81", "#0f172a"],
+        Productivity: ["#0f766e", "#2563eb"],
+        Romance: ["#be185d", "#fb7185"],
+        "Science Fiction": ["#172554", "#7c3aed"],
+        "Self-Help": ["#0f766e", "#84cc16"],
+    };
+
+    const escapeSvgText = (value) =>
+        String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+
+    const wrapCoverTitle = (title) => {
+        const words = title.split(/\s+/);
+        const lines = [];
+        let current = "";
+
+        words.forEach((word) => {
+            const next = current ? `${current} ${word}` : word;
+            if (next.length > 16 && current) {
+                lines.push(current);
+                current = word;
+            } else {
+                current = next;
+            }
+        });
+        if (current) {
+            lines.push(current);
+        }
+        return lines.slice(0, 4);
+    };
+
+    const buildCoverSvg = (book, index) => {
+        const [first, second] = categoryStyles[book.category] || ["#334155", "#0f766e"];
+        const titleLines = wrapCoverTitle(book.title);
+        const titleMarkup = titleLines
+            .map(
+                (line, lineIndex) =>
+                    `<text x="34" y="${310 + lineIndex * 38}" fill="#fff" font-family="Arial, sans-serif" font-size="30" font-weight="800">${escapeSvgText(line)}</text>`
+            )
+            .join("");
+        const category = escapeSvgText(book.category);
+        const number = String(index + 1).padStart(2, "0");
+        const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-label="${escapeSvgText(book.title)} cover">
+                <defs>
+                    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+                        <stop stop-color="${first}"/>
+                        <stop offset="1" stop-color="${second}"/>
+                    </linearGradient>
+                    <radialGradient id="r" cx="68%" cy="18%" r="60%">
+                        <stop stop-color="rgba(255,255,255,.34)"/>
+                        <stop offset=".55" stop-color="rgba(255,255,255,.08)"/>
+                        <stop offset="1" stop-color="rgba(255,255,255,0)"/>
+                    </radialGradient>
+                </defs>
+                <rect width="360" height="500" rx="28" fill="url(#g)"/>
+                <rect x="24" y="28" width="312" height="444" rx="22" fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.28)"/>
+                <circle cx="270" cy="88" r="86" fill="url(#r)"/>
+                <path d="M92 176c42-38 84-54 126-48 34 5 58 25 72 60-40-22-80-23-120-4-32 15-58 38-78 70z" fill="none" stroke="rgba(255,255,255,.86)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M84 246h190M92 270h152M102 138h.1M268 220h.1" stroke="rgba(255,255,255,.76)" stroke-width="12" stroke-linecap="round"/>
+                <text x="34" y="74" fill="rgba(255,255,255,.82)" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="1.8">${category}</text>
+                <text x="286" y="74" fill="rgba(255,255,255,.82)" font-family="Arial, sans-serif" font-size="18" font-weight="800">${number}</text>
+                ${titleMarkup}
+                <text x="34" y="456" fill="rgba(255,255,255,.78)" font-family="Arial, sans-serif" font-size="16">${category}</text>
+            </svg>`;
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    };
+
+    const renderBookRowCovers = () => {
+        document.querySelectorAll("[data-book-cover-row]").forEach((row, index) => {
+            const image = row.querySelector("[data-book-cover-image]");
+            if (!image) {
+                return;
+            }
+            if (image.getAttribute("src")) {
+                return;
+            }
+            const title = row.dataset.bookTitle || "Library Book";
+            const category = row.dataset.bookCategory || "Library";
+            image.src = buildCoverSvg({ title, category }, index);
+            image.alt = `${title} cover`;
+        });
+    };
+
+    const renderBookFormPreview = () => {
+        const preview = document.querySelector("[data-book-form-preview]");
+        if (!preview) {
             return;
         }
 
-        const cards = Array.from(list.querySelectorAll("[data-public-book-card]"));
-        const emptyState = document.querySelector("[data-public-book-empty]");
+        const titleInput = document.querySelector("#id_title");
+        const categorySelect = document.querySelector("#id_category");
+        const image = preview.querySelector("[data-book-form-cover]");
+        const titleText = preview.querySelector("[data-book-form-title]");
+        const categoryText = preview.querySelector("[data-book-form-category]");
 
-        input.addEventListener("input", () => {
-            const term = input.value.trim().toLowerCase();
-            let visibleCount = 0;
+        const selectedCategoryText = () => {
+            const selected = categorySelect && categorySelect.selectedOptions
+                ? categorySelect.selectedOptions[0]
+                : null;
+            const value = selected ? selected.textContent.trim() : "";
+            return value || "Library";
+        };
 
-            cards.forEach((card) => {
-                const text = (card.dataset.searchText || card.textContent).toLowerCase();
-                const isVisible = !term || text.includes(term);
-                card.classList.toggle("d-none", !isVisible);
-                if (isVisible) {
-                    visibleCount += 1;
-                }
-            });
+        const updatePreview = () => {
+            const title = titleInput && titleInput.value.trim()
+                ? titleInput.value.trim()
+                : "New Library Book";
+            const category = selectedCategoryText();
 
-            if (emptyState) {
-                emptyState.classList.toggle("d-none", visibleCount !== 0);
+            if (image) {
+                image.src = buildCoverSvg({ title, category }, 0);
+                image.alt = `${title} cover preview`;
             }
-        });
-    });
+            if (titleText) {
+                titleText.textContent = title;
+            }
+            if (categoryText) {
+                categoryText.textContent = `${category} cover style`;
+            }
+        };
+
+        if (titleInput) {
+            titleInput.addEventListener("input", updatePreview);
+        }
+        if (categorySelect) {
+            categorySelect.addEventListener("change", updatePreview);
+        }
+        updatePreview();
+    };
+
+    renderBookRowCovers();
+    renderBookFormPreview();
 
     document.querySelectorAll("[data-print-page]").forEach((button) => {
         button.addEventListener("click", () => {

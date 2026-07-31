@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -39,6 +40,13 @@ def env_int(name, default, aliases=()):
         return int(env_value(name, str(default), aliases=aliases))
     except (TypeError, ValueError) as exc:
         raise ImproperlyConfigured(f"{name} must be an integer.") from exc
+
+
+def env_decimal(name, default, aliases=()):
+    try:
+        return Decimal(str(env_value(name, default, aliases=aliases)))
+    except (InvalidOperation, TypeError, ValueError) as exc:
+        raise ImproperlyConfigured(f"{name} must be a decimal value.") from exc
 
 
 DEVELOPMENT_SECRET_KEY = "django-insecure-library-management-system-dev-key"
@@ -206,6 +214,7 @@ LOGIN_REDIRECT_URL = "library:dashboard"
 LOGOUT_REDIRECT_URL = "library:login"
 PASSWORD_RESET_TIMEOUT = env_int("PASSWORD_RESET_TIMEOUT", 60 * 60 * 24)
 TEST_RUNNER = "apps.library.test_runner.LibraryDiscoverRunner"
+FINE_RATE_PER_DAY = env_decimal("FINE_RATE_PER_DAY", "1.00")
 
 USE_SUPABASE_AUTH = env_bool("USE_SUPABASE_AUTH", False)
 SUPABASE_PROJECT_REF = os.getenv("SUPABASE_PROJECT_REF", "")

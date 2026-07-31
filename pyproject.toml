@@ -5,6 +5,7 @@ include = '\.pyi?$'
 extend-exclude = '''
 /(
   \.venv
+  | legacy_phase_artifacts
   | staticfiles
   | media
   | apps/library/migrations
@@ -33,6 +34,7 @@ profile = "black"
 line_length = 88
 skip_glob = [
     ".venv/*",
+    "legacy_phase_artifacts/*",
     "staticfiles/*",
     "media/*",
     "apps/library/migrations/*",

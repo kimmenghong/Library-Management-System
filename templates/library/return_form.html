@@ -3,25 +3,29 @@
 {% block title %}Return Book | Library Management System{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <h1 class="h3 mb-4">Return Book</h1>
-        <div class="bg-white border rounded shadow-sm p-4">
-            <dl class="row">
-                <dt class="col-sm-4">Borrow ID</dt><dd class="col-sm-8">{{ borrow_record.borrow_id }}</dd>
-                <dt class="col-sm-4">Member</dt><dd class="col-sm-8">{{ borrow_record.member }}</dd>
-                <dt class="col-sm-4">Book</dt><dd class="col-sm-8">{{ borrow_record.book.title }}</dd>
-                <dt class="col-sm-4">Due date</dt><dd class="col-sm-8">{{ borrow_record.due_date }}</dd>
+<div class="admin-form-page">
+    <div class="admin-form-shell">
+        <div class="admin-form-header">
+            <p class="admin-form-kicker">Circulation</p>
+            <h1 class="admin-form-title">Return Book</h1>
+        </div>
+
+        <div class="admin-form-card">
+            <dl class="admin-detail-list">
+                <dt>Borrow ID</dt><dd>{{ borrow_record.borrow_id }}</dd>
+                <dt>Member</dt><dd>{{ borrow_record.member }}</dd>
+                <dt>Book</dt><dd>{{ borrow_record.book.title }}</dd>
+                <dt>Due date</dt><dd>{{ borrow_record.due_date }}</dd>
             </dl>
             <form method="post" novalidate>
                 {% csrf_token %}
                 <div class="mb-3">
                     <label class="form-label" for="{{ form.return_date.id_for_label }}">Return date</label>
                     {{ form.return_date }}
-                    {% for error in form.return_date.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                    {% for error in form.return_date.errors %}<div class="admin-form-error">{{ error }}</div>{% endfor %}
                 </div>
-                <div class="d-flex justify-content-end gap-2">
-                    <a class="btn btn-outline-secondary" href="{% url 'library:borrow_list' %}">Cancel</a>
+                <div class="admin-form-actions">
+                    <a class="btn admin-form-cancel" href="{% url 'library:borrow_list' %}">Cancel</a>
                     <button class="btn btn-success" type="submit">Confirm Return</button>
                 </div>
             </form>

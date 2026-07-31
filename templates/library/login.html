@@ -15,6 +15,11 @@
                         class="auth-image"
                         alt="University library reading area"
                     >
+                    <div class="auth-image-shine" aria-hidden="true"></div>
+                    <div class="auth-image-caption" aria-hidden="true">
+                        <span class="auth-image-caption-icon"><i class="bi bi-book"></i></span>
+                        <span>University Library</span>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-5">
@@ -75,75 +80,156 @@
         <span class="section-icon text-bg-primary"><i class="bi bi-search"></i></span>
     </div>
 
-    <div class="public-search-panel">
-        <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input
-                class="form-control"
-                type="search"
-                placeholder="Search by title, author, category, ISBN, or book code"
-                data-public-book-search="#publicBookGrid"
-                aria-label="Search public catalog preview"
-            >
+    <form class="public-search-panel" method="get" action="#public-search" aria-label="Public catalog search and filters">
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        <div class="row g-2 align-items-end">
+            <div class="col-lg-6">
+                <label class="form-label visually-hidden" for="publicCatalogSearch">Search public catalog</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="publicCatalogSearchIcon"><i class="bi bi-search"></i></span>
+                    <input
+                        class="form-control"
+                        id="publicCatalogSearch"
+                        name="catalog_q"
+                        type="search"
+                        value="{{ public_catalog_query }}"
+                        placeholder="Search by title, author, category, ISBN, or book code"
+                        aria-describedby="publicCatalogSearchIcon"
+                    >
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <label class="form-label" for="publicCatalogStatus">Status</label>
+                <select class="form-select" id="publicCatalogStatus" name="catalog_status">
+                    <option value="">All statuses</option>
+                    {% for status in public_catalog_statuses %}
+                        <option value="{{ status }}" {% if public_catalog_selected_status == status %}selected{% endif %}>
+                            {{ status }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <label class="form-label" for="publicCatalogCategory">Category</label>
+                <select class="form-select" id="publicCatalogCategory" name="catalog_category">
+                    <option value="">All categories</option>
+                    {% for category in public_catalog_categories %}
+                        <option value="{{ category }}" {% if public_catalog_selected_category == category %}selected{% endif %}>
+                            {{ category }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-2">
+                <div class="public-filter-actions">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-funnel"></i>
+                        Filter
+                    </button>
+                    <a class="btn btn-outline-secondary" href="{% url 'library:login' %}#public-search">Reset</a>
+                </div>
+            </div>
         </div>
+    </form>
+
+    <div class="row g-3 public-book-grid" id="publicBookGrid">
+        {% for book in public_catalog_books %}
+            <div class="col-sm-6 col-lg-4 col-xxl-3" data-public-book-card data-search-text="{{ book.search_text }}">
+                {% url 'library:public_book_detail' book.code as detail_url %}
+                <article class="public-book-card">
+                    <a
+                        class="book-cover-frame book-cover-link"
+                        href="{{ detail_url }}?{% if public_catalog_querystring %}{{ public_catalog_querystring }}&{% endif %}catalog_page={{ public_catalog_page.number }}"
+                        aria-label="View details for {{ book.title }}"
+                    >
+                        <img
+                            class="book-cover-image"
+                            src="{{ STATIC_PREFIX }}{{ book.cover }}"
+                            alt="Cover image for {{ book.title }} by {{ book.author }}"
+                            loading="lazy"
+                            width="360"
+                            height="480"
+                            onerror="this.onerror=null;this.src='{{ STATIC_PREFIX }}images/books/fallback_book_cover.svg';"
+                        >
+                    </a>
+                    <div class="book-meta">
+                        <span class="badge {{ book.status_class }}">{{ book.status }}</span>
+                        <span class="badge text-bg-light border">{{ book.code }}</span>
+                    </div>
+                    <h3>
+                        <a href="{{ detail_url }}?{% if public_catalog_querystring %}{{ public_catalog_querystring }}&{% endif %}catalog_page={{ public_catalog_page.number }}">
+                            {{ book.title }}
+                        </a>
+                    </h3>
+                    <p>{{ book.author }}</p>
+                    <div class="public-book-detail-row">
+                        <small>{{ book.category }}</small>
+                        <small>Year {{ book.year }}</small>
+                    </div>
+                    <div class="public-book-detail-row">
+                        <small>{{ book.available_copies }} copies available</small>
+                    </div>
+                    <small class="public-book-isbn">ISBN {{ book.isbn }}</small>
+                    <a
+                        class="btn btn-outline-primary btn-sm public-book-details-btn mt-auto"
+                        href="{{ detail_url }}?{% if public_catalog_querystring %}{{ public_catalog_querystring }}&{% endif %}catalog_page={{ public_catalog_page.number }}"
+                    >
+                        View Details
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </article>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="public-empty-state">
+                    <i class="bi bi-search"></i>
+                    <h3>No matching books found</h3>
+                    <p>Try a different title, author, category, ISBN, book code, status, or category filter.</p>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 
-    <div class="row g-3" id="publicBookGrid">
-        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="clean code robert c martin programming software engineering isbn 9780132350884 code BK-1001 available">
-            <article class="public-book-card">
-                <div class="book-cover book-cover-blue"><i class="bi bi-code-slash"></i></div>
-                <div class="book-meta">
-                    <span class="badge text-bg-success">Available</span>
-                    <span class="badge text-bg-light border">BK-1001</span>
-                </div>
-                <h3>Clean Code</h3>
-                <p>Robert C. Martin</p>
-                <small>Programming - ISBN 9780132350884</small>
-            </article>
+    {% if public_catalog_filtered_count %}
+        <div class="public-catalog-footer">
+            <p class="public-catalog-summary" aria-live="polite">
+                Showing {{ public_catalog_page.start_index }}-{{ public_catalog_page.end_index }}
+                of {{ public_catalog_filtered_count }} books
+                {% if public_catalog_filtered_count != public_catalog_total %}
+                    filtered from {{ public_catalog_total }}
+                {% endif %}
+            </p>
+            {% if public_catalog_page.paginator.num_pages > 1 %}
+                <nav aria-label="Public catalog pagination">
+                    <ul class="pagination public-pagination mb-0">
+                        <li class="page-item {% if not public_catalog_page.has_previous %}disabled{% endif %}">
+                            {% if public_catalog_page.has_previous %}
+                                <a class="page-link" href="?{% if public_catalog_querystring %}{{ public_catalog_querystring }}&{% endif %}catalog_page={{ public_catalog_page.previous_page_number }}#public-search" aria-label="Previous catalog page">Prev</a>
+                            {% else %}
+                                <span class="page-link" aria-hidden="true">Prev</span>
+                            {% endif %}
+                        </li>
+                        {% for page_number in public_catalog_page.paginator.page_range %}
+                            <li class="page-item {% if public_catalog_page.number == page_number %}active{% endif %}">
+                                {% if public_catalog_page.number == page_number %}
+                                    <span class="page-link" aria-current="page">{{ page_number }}</span>
+                                {% else %}
+                                    <a class="page-link" href="?{% if public_catalog_querystring %}{{ public_catalog_querystring }}&{% endif %}catalog_page={{ page_number }}#public-search" aria-label="Catalog page {{ page_number }}">{{ page_number }}</a>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        <li class="page-item {% if not public_catalog_page.has_next %}disabled{% endif %}">
+                            {% if public_catalog_page.has_next %}
+                                <a class="page-link" href="?{% if public_catalog_querystring %}{{ public_catalog_querystring }}&{% endif %}catalog_page={{ public_catalog_page.next_page_number }}#public-search" aria-label="Next catalog page">Next</a>
+                            {% else %}
+                                <span class="page-link" aria-hidden="true">Next</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
         </div>
-        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="database system concepts abraham silberschatz database isbn 9780073523323 code BK-1002 borrowed">
-            <article class="public-book-card">
-                <div class="book-cover book-cover-green"><i class="bi bi-database"></i></div>
-                <div class="book-meta">
-                    <span class="badge text-bg-warning">Borrowed</span>
-                    <span class="badge text-bg-light border">BK-1002</span>
-                </div>
-                <h3>Database System Concepts</h3>
-                <p>Abraham Silberschatz</p>
-                <small>Database - ISBN 9780073523323</small>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="computer networking james kurose keith ross networking isbn 9780133594140 code BK-1003 available">
-            <article class="public-book-card">
-                <div class="book-cover book-cover-red"><i class="bi bi-router"></i></div>
-                <div class="book-meta">
-                    <span class="badge text-bg-success">Available</span>
-                    <span class="badge text-bg-light border">BK-1003</span>
-                </div>
-                <h3>Computer Networking</h3>
-                <p>James Kurose, Keith Ross</p>
-                <small>Networking - ISBN 9780133594140</small>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="introduction to algorithms thomas cormen algorithms isbn 9780262033848 code BK-1004 available">
-            <article class="public-book-card">
-                <div class="book-cover book-cover-purple"><i class="bi bi-diagram-3"></i></div>
-                <div class="book-meta">
-                    <span class="badge text-bg-success">Available</span>
-                    <span class="badge text-bg-light border">BK-1004</span>
-                </div>
-                <h3>Introduction to Algorithms</h3>
-                <p>Thomas H. Cormen</p>
-                <small>Algorithms - ISBN 9780262033848</small>
-            </article>
-        </div>
-    </div>
-
-    <div class="public-empty-state d-none" data-public-book-empty>
-        <i class="bi bi-search"></i>
-        <h3>No matching books found</h3>
-        <p>Try a different title, author, category, ISBN, or book code.</p>
-    </div>
+    {% endif %}
 </section>
 
 <section class="public-section" id="about">

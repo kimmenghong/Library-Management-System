@@ -1,0 +1,103 @@
+name: Database Maintenance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Database action to run"
+        required: true
+        default: "backup"
+        type: choice
+        options:
+          - backup
+          - migrate
+          - backup-and-migrate
+
+permissions:
+  contents: read
+
+jobs:
+  database:
+    name: Supabase PostgreSQL maintenance
+    runs-on: ubuntu-latest
+    env:
+      DEBUG: "False"
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALLOWED_HOSTS: maintenance.local
+      CSRF_TRUSTED_ORIGINS: https://maintenance.local
+      DATABASE_ENGINE: postgresql
+      DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
+      DATABASE_USER: ${{ secrets.DATABASE_USER }}
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+      DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
+      DATABASE_PORT: ${{ secrets.DATABASE_PORT }}
+      DATABASE_SSLMODE: require
+      SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+      USE_SUPABASE_AUTH: "False"
+      LOG_DIR: /tmp/library-maintenance-logs
+      STATIC_ROOT: /tmp/library-maintenance-staticfiles
+      MEDIA_ROOT: /tmp/library-maintenance-media
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify required database secrets
+        run: |
+          missing=0
+          for name in SECRET_KEY DATABASE_NAME DATABASE_USER DATABASE_PASSWORD DATABASE_HOST DATABASE_PORT SUPABASE_DATABASE_URL; do
+            if [ -z "${!name}" ]; then
+              echo "$name is missing"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Create Supabase backup
+        if: ${{ inputs.action == 'backup' || inputs.action == 'backup-and-migrate' }}
+        run: |
+          mkdir -p database_backups
+          backup_file="database_backups/library_$(date -u +%Y%m%d_%H%M%S).dump"
+          pg_dump "$SUPABASE_DATABASE_URL" --format=custom --no-owner --no-acl --file "$backup_file"
+          echo "BACKUP_FILE=$backup_file" >> "$GITHUB_ENV"
+
+      - name: Upload backup artifact
+        if: ${{ inputs.action == 'backup' || inputs.action == 'backup-and-migrate' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-postgresql-backup
+          path: database_backups/*.dump
+          retention-days: 14
+
+      - name: Verify migration plan
+        if: ${{ inputs.action == 'migrate' || inputs.action == 'backup-and-migrate' }}
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Run Django migrations
+        if: ${{ inputs.action == 'migrate' || inputs.action == 'backup-and-migrate' }}
+        run: python manage.py migrate --noinput
+
+      - name: Migration summary
+        run: |
+          echo "Database maintenance action completed: ${{ inputs.action }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "If a backup was created, download it from this workflow run's artifacts." >> "$GITHUB_STEP_SUMMARY"
+

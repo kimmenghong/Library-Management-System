@@ -2,11 +2,15 @@ services:
   - type: web
     name: library-management-system
     runtime: python
-    plan: free
+    plan: starter
     buildCommand: bash build.sh
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120 --access-logfile - --error-logfile -
     healthCheckPath: /
     autoDeploy: true
+    disk:
+      name: library-runtime-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: SECRET_KEY
         sync: false
@@ -40,6 +44,10 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         value: ""
+      - key: MEDIA_ROOT
+        value: /var/data/media
+      - key: LOG_DIR
+        value: /var/data/logs
       - key: CSRF_COOKIE_SECURE
         value: "True"
       - key: SESSION_COOKIE_SECURE

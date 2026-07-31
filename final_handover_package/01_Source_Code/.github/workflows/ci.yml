@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Check formatting
+        run: black --check apps/library config manage.py
+
+      - name: Check import order
+        run: isort --check-only apps/library config manage.py
+
+      - name: Lint
+        run: flake8 apps/library config manage.py
+
+      - name: Run Django checks
+        run: python manage.py check
+
+      - name: Verify migrations
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations
+        run: python manage.py migrate --noinput
+
+      - name: Run tests
+        run: python manage.py test

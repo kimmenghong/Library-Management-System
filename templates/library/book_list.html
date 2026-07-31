@@ -1,4 +1,5 @@
 {% extends "library/base.html" %}
+{% load static %}
 
 {% block title %}Books | Library Management System{% endblock %}
 
@@ -87,8 +88,31 @@
                     <tr>
                         <td class="text-secondary">#{{ book.book_id }}</td>
                         <td>
-                            <div class="fw-semibold">{{ book.title }}</div>
-                            <div class="small text-secondary"><i class="bi bi-geo-alt me-1"></i>{{ book.shelf_location|default:"No shelf" }}</div>
+                            <div
+                                class="book-title-cell"
+                                data-book-cover-row
+                                data-book-real-cover="true"
+                                data-book-title="{{ book.title }}"
+                                data-book-category="{{ book.category.category_name }}"
+                            >
+                                <img
+                                    class="book-row-cover"
+                                    data-book-cover-image
+                                    src="{% if book.public_catalog_cover %}{% static book.public_catalog_cover %}{% else %}{% static 'images/books/fallback_book_cover.svg' %}{% endif %}"
+                                    alt="{{ book.title }} cover"
+                                    loading="lazy"
+                                    onerror="this.onerror=null;this.src='{% static 'images/books/fallback_book_cover.svg' %}';"
+                                >
+                                <div class="book-title-copy">
+                                    <div class="fw-semibold">{{ book.title }}</div>
+                                    <div class="small text-secondary">
+                                        <i class="bi bi-geo-alt me-1"></i>{{ book.shelf_location|default:"No shelf" }}
+                                        {% if book.public_catalog_code %}
+                                            <span class="ms-2">{{ book.public_catalog_code }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                         <td><code class="table-code">{{ book.isbn }}</code></td>
                         <td>{{ book.author.author_name }}</td>

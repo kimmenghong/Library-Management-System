@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Poetry book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7c2d12"/><stop offset="1" stop-color="#be185d"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <path d="M112 286c58-12 98-46 120-102 14-34 12-62-6-84-48 22-82 58-102 108-12 30-16 56-12 78z" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M112 286c32-48 68-88 120-186M92 322h150" stroke="#fecdd3" stroke-width="12" stroke-linecap="round"/>
+  <text x="40" y="354" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">Selected</text>
+  <text x="40" y="406" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">Poems</text>
+  <text x="40" y="444" fill="#fce7f3" font-family="Arial, sans-serif" font-size="18">Poetry</text>
+</svg>

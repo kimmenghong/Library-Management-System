@@ -3,12 +3,27 @@
 {% block title %}{{ title }} | Library Management System{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-xl-8">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">{{ title }}</h1>
+<div class="admin-form-page">
+    <div class="admin-form-shell admin-form-shell-wide">
+        <div class="admin-form-header">
+            <p class="admin-form-kicker">Administration</p>
+            <h1 class="admin-form-title">{{ title }}</h1>
         </div>
-        <form method="post" enctype="multipart/form-data" class="bg-white border rounded shadow-sm p-4" novalidate>
+
+        {% if title == "Add Book" or title == "Edit Book" %}
+            <div class="admin-book-preview" data-book-form-preview>
+                <div class="admin-book-preview-cover">
+                    <img data-book-form-cover src="" alt="Book cover preview" loading="lazy">
+                </div>
+                <div>
+                    <p class="admin-book-preview-kicker">Cover Preview</p>
+                    <h2 class="admin-book-preview-title" data-book-form-title>Library Book</h2>
+                    <p class="admin-book-preview-category" data-book-form-category>Choose a category to preview the cover style.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="admin-form-card" novalidate>
             {% csrf_token %}
             {% if form.non_field_errors %}
                 <div class="alert alert-danger">{{ form.non_field_errors }}</div>
@@ -26,15 +41,15 @@
                             {{ field }}
                         {% endif %}
                         {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                        {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                        {% for error in field.errors %}<div class="admin-form-error">{{ error }}</div>{% endfor %}
                     </div>
                 {% endfor %}
             </div>
-            <div class="d-flex justify-content-end gap-2 mt-4">
+            <div class="admin-form-actions mt-4">
                 {% if cancel_url %}
-                    <a class="btn btn-outline-secondary" href="{% url cancel_url %}">Cancel</a>
+                    <a class="btn admin-form-cancel" href="{% url cancel_url %}">Cancel</a>
                 {% else %}
-                    <a class="btn btn-outline-secondary" href="{% url 'library:entity_list' entity=entity %}">Cancel</a>
+                    <a class="btn admin-form-cancel" href="{% url 'library:entity_list' entity=entity %}">Cancel</a>
                 {% endif %}
                 <button class="btn btn-primary" type="submit">Save</button>
             </div>

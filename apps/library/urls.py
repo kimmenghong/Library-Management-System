@@ -7,6 +7,11 @@ app_name = "library"
 urlpatterns = [
     path("register/", views.register_view, name="register"),
     path("login/", views.login_view, name="login"),
+    path(
+        "public/books/<str:book_code>/",
+        views.public_book_detail,
+        name="public_book_detail",
+    ),
     path("logout/", views.logout_view, name="logout"),
     path("", views.dashboard, name="dashboard"),
     path("manage/<str:entity>/", views.entity_list, name="entity_list"),

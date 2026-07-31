@@ -1,0 +1,101 @@
+{% extends "library/base.html" %}
+
+{% block title %}Notifications | Library Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-kicker">Messages</div>
+        <h1 class="page-title">Notifications</h1>
+        <p class="page-subtitle">Member notification history and read status.</p>
+    </div>
+    {% if can_manage %}
+        <a class="btn btn-primary" href="{% url 'library:notification_create' %}">
+            <i class="bi bi-plus-lg me-1"></i>Add Notification
+        </a>
+    {% endif %}
+</div>
+
+<div class="toolbar-panel mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-7 col-xl-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input class="form-control" type="search" placeholder="Search title, member, type, or message" data-table-search="#notificationTable">
+            </div>
+        </div>
+        <div class="col-md-auto ms-md-auto">
+            <span class="badge text-bg-light border">{{ page_obj.paginator.count }} notification{{ page_obj.paginator.count|pluralize }}</span>
+        </div>
+        <div class="col-12">
+            <div class="table-tool-group" data-table-tools="#notificationTable">
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle-column-filters>
+                    <i class="bi bi-layout-three-columns me-1"></i>Columns
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="excel">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="pdf">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-print-table>
+                    <i class="bi bi-printer me-1"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-panel p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table" id="notificationTable" data-enhanced-table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Member</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Message</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notification in notifications %}
+                    <tr>
+                        <td class="text-secondary">#{{ notification.notification_id }}</td>
+                        <td><span class="fw-semibold">{{ notification.member.member_code }}</span></td>
+                        <td>{{ notification.title }}</td>
+                        <td><span class="badge text-bg-light border">{{ notification.get_notification_type_display }}</span></td>
+                        <td>{{ notification.message|truncatechars:80 }}</td>
+                        <td>{{ notification.created_at }}</td>
+                        <td>
+                            {% if notification.is_read %}
+                                <span class="badge status-badge text-bg-success">Read</span>
+                            {% else %}
+                                <span class="badge status-badge text-bg-warning">Unread</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if not notification.is_read %}
+                                <form method="post" action="{% url 'library:notification_read' notification.notification_id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-primary" type="submit">
+                                        <i class="bi bi-check2 me-1"></i>Read
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-secondary">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="8" class="empty-state">No notifications found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "library/includes/pagination.html" %}
+{% endblock %}

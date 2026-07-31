@@ -1,0 +1,317 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Library Management System{% endblock %}</title>
+    <link rel="icon" href="{% static 'images/favicon.svg' %}" type="image/svg+xml">
+    <script>
+        (function () {
+            var theme = localStorage.getItem("library-theme") || "light";
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.setAttribute("data-bs-theme", theme);
+        }());
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <a class="skip-link" href="#mainContent">Skip to main content</a>
+    {% if user.is_authenticated %}
+        <div class="app-shell">
+            <aside class="app-sidebar" id="appSidebar">
+                <div class="sidebar-brand">
+                    <a href="{% url 'library:dashboard' %}" class="sidebar-logo">
+                        <span class="sidebar-logo-mark">
+                            <img src="{% static 'images/library-logo.svg' %}" alt="" aria-hidden="true">
+                        </span>
+                        <span>
+                            <span class="sidebar-title">Library MS</span>
+                            <span class="sidebar-subtitle">University System</span>
+                        </span>
+                    </a>
+                </div>
+
+                <nav class="sidebar-nav" aria-label="Main navigation">
+                    <div class="sidebar-section">Workspace</div>
+                    <a class="sidebar-link" href="{% url 'library:dashboard' %}">
+                        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+                    </a>
+                    <a class="sidebar-link" href="{% url 'library:book_list' %}">
+                        <i class="bi bi-book"></i><span>Books</span>
+                    </a>
+                    <a class="sidebar-link" href="{% url 'library:borrow_list' %}">
+                        <i class="bi bi-arrow-left-right"></i><span>Borrowing</span>
+                    </a>
+                    <a class="sidebar-link" href="{% url 'library:fine_list' %}">
+                        <i class="bi bi-cash-coin"></i><span>Fines</span>
+                    </a>
+                    <a class="sidebar-link" href="{% url 'library:notification_list' %}">
+                        <i class="bi bi-bell"></i><span>Notifications</span>
+                    </a>
+
+                    {% if user.can_manage_library %}
+                        <div class="sidebar-section">Management</div>
+                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='users' %}">
+                            <i class="bi bi-people"></i><span>Users</span>
+                        </a>
+                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='members' %}">
+                            <i class="bi bi-person-badge"></i><span>Members</span>
+                        </a>
+                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='roles' %}">
+                            <i class="bi bi-shield-check"></i><span>Roles</span>
+                        </a>
+
+                        <div class="sidebar-section">Catalog</div>
+                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='categories' %}">
+                            <i class="bi bi-tags"></i><span>Categories</span>
+                        </a>
+                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='authors' %}">
+                            <i class="bi bi-vector-pen"></i><span>Authors</span>
+                        </a>
+                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='publishers' %}">
+                            <i class="bi bi-building"></i><span>Publishers</span>
+                        </a>
+                        <a class="sidebar-link" href="{% url 'library:report_list' %}">
+                            <i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span>
+                        </a>
+                    {% endif %}
+                </nav>
+            </aside>
+
+            <div class="app-main">
+                <header class="app-topbar">
+                    <div class="topbar-left">
+                        <button class="btn btn-icon btn-light d-lg-none" type="button" data-sidebar-toggle aria-label="Toggle menu">
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <div>
+                            <div class="topbar-title">Library Management System</div>
+                            <div class="topbar-subtitle">Signed in as {{ user.full_name }}</div>
+                        </div>
+                    </div>
+
+                    <div class="global-search d-none d-xl-block">
+                        <label class="visually-hidden" for="globalSearch">Global search</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input
+                                class="form-control"
+                                id="globalSearch"
+                                type="search"
+                                placeholder="Search books, members, borrowing, reports"
+                                autocomplete="off"
+                                data-global-search
+                                aria-controls="globalSearchResults"
+                            >
+                        </div>
+                        <div class="global-search-results" id="globalSearchResults" data-global-search-results>
+                            <a href="{% url 'library:book_list' %}" data-search-item data-search-text="books catalog title isbn author publisher category shelf">
+                                <i class="bi bi-book"></i>
+                                <span>
+                                    <strong>Books</strong>
+                                    <small>Titles, ISBN, authors, categories</small>
+                                </span>
+                            </a>
+                            {% if user.can_manage_library %}
+                                <a href="{% url 'library:entity_list' entity='members' %}" data-search-item data-search-text="members students teachers staff member code department">
+                                    <i class="bi bi-person-badge"></i>
+                                    <span>
+                                        <strong>Members</strong>
+                                        <small>Students, teachers, staff profiles</small>
+                                    </span>
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'library:borrow_list' %}" data-search-item data-search-text="borrow records issue return overdue circulation">
+                                <i class="bi bi-arrow-left-right"></i>
+                                <span>
+                                    <strong>Borrow Records</strong>
+                                    <small>Issued books, returns, overdue records</small>
+                                </span>
+                            </a>
+                            <a href="{% url 'library:fine_list' %}" data-search-item data-search-text="fines payments unpaid paid balance">
+                                <i class="bi bi-cash-coin"></i>
+                                <span>
+                                    <strong>Fines</strong>
+                                    <small>Payments, balances, member fines</small>
+                                </span>
+                            </a>
+                            {% if user.can_manage_library %}
+                                <a href="{% url 'library:report_list' %}" data-search-item data-search-text="reports analytics exports most borrowed active borrowers fines">
+                                    <i class="bi bi-file-earmark-bar-graph"></i>
+                                    <span>
+                                        <strong>Reports</strong>
+                                        <small>Generated files and analytics</small>
+                                    </span>
+                                </a>
+                            {% endif %}
+                            <div class="global-search-empty d-none" data-global-search-empty>No matching module found.</div>
+                        </div>
+                    </div>
+
+                    <div class="topbar-actions">
+                        <button class="btn btn-icon btn-light" type="button" data-theme-toggle aria-label="Switch theme">
+                            <i class="bi bi-moon-stars" data-theme-icon></i>
+                        </button>
+
+                        <div class="dropdown">
+                            <button class="btn btn-icon btn-light position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notification center">
+                                <i class="bi bi-bell"></i>
+                                <span class="notification-count d-none" data-unread-counter>0</span>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end notification-menu shadow-sm">
+                                <div class="dropdown-header d-flex align-items-center justify-content-between">
+                                    <span>Notifications</span>
+                                    <a class="small" href="{% url 'library:notification_list' %}">View all</a>
+                                </div>
+                                <div class="notification-list">
+                                    {% for notification in notifications|slice:":5" %}
+                                        <div class="notification-item {% if not notification.is_read %}is-unread{% endif %}" data-notification-item>
+                                            <div class="notification-icon"><i class="bi bi-bell"></i></div>
+                                            <div class="notification-body">
+                                                <strong>{{ notification.title }}</strong>
+                                                <p>{{ notification.message|truncatechars:72 }}</p>
+                                                <small>{{ notification.created_at }}</small>
+                                            </div>
+                                            {% if not notification.is_read %}
+                                                <form method="post" action="{% url 'library:notification_read' notification.notification_id %}">
+                                                    {% csrf_token %}
+                                                    <button class="btn btn-sm btn-link" type="submit">Read</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    {% empty %}
+                                        <div class="notification-empty">
+                                            <i class="bi bi-bell-slash"></i>
+                                            <span>No recent notifications</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-light topbar-profile" type="button" data-bs-toggle="offcanvas" data-bs-target="#accountPanel" aria-controls="accountPanel">
+                            <span class="avatar-circle" data-avatar-preview>{{ user.full_name|default:user.username|slice:":1" }}</span>
+                            <span class="profile-copy d-none d-md-inline">
+                                <span>{{ user.full_name|default:user.username }}</span>
+                                <small>{{ user.role.role_name }}</small>
+                            </span>
+                        </button>
+
+                        <form method="post" action="{% url 'library:logout' %}">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-secondary btn-sm" type="submit">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </button>
+                        </form>
+                    </div>
+                </header>
+                <main class="app-content" id="mainContent" tabindex="-1">
+    {% else %}
+        <nav class="public-nav">
+            <a class="public-brand" href="/login/#home">
+                <img src="{% static 'images/library-logo.svg' %}" alt="" aria-hidden="true">
+                <span>Library MS</span>
+            </a>
+            <div class="public-nav-links">
+                <a href="/login/#public-search">Books</a>
+                <a href="/login/#about">About</a>
+                <a href="/login/#contact">Contact</a>
+                <button class="btn btn-sm btn-light" type="button" data-theme-toggle aria-label="Switch theme">
+                    <i class="bi bi-moon-stars" data-theme-icon></i>
+                </button>
+                <a class="btn btn-sm btn-primary" href="/login/#login-card">Login</a>
+            </div>
+        </nav>
+        <main class="container-fluid px-3 px-lg-4 py-4" id="mainContent" tabindex="-1">
+    {% endif %}
+
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+
+    {% if user.is_authenticated %}
+                    <footer class="app-footer">
+                        <span>Library Management System v1.0.0</span>
+                        <span>University Library - Copyright {% now "Y" %}</span>
+                    </footer>
+                </main>
+            </div>
+        </div>
+
+        <div class="offcanvas offcanvas-end account-panel" tabindex="-1" id="accountPanel" aria-labelledby="accountPanelLabel">
+            <div class="offcanvas-header">
+                <div>
+                    <div class="page-kicker">Account</div>
+                    <h2 class="offcanvas-title h5" id="accountPanelLabel">Profile Settings</h2>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="profile-card">
+                    <span class="avatar-circle avatar-circle-lg" data-avatar-preview>{{ user.full_name|default:user.username|slice:":1" }}</span>
+                    <div>
+                        <h3>{{ user.full_name|default:user.username }}</h3>
+                        <p>{{ user.email }}</p>
+                        <span class="badge text-bg-success">{{ user.role.role_name }}</span>
+                    </div>
+                </div>
+
+                <div class="account-section">
+                    <label class="form-label" for="profilePhotoInput">Profile photo</label>
+                    <input class="form-control" id="profilePhotoInput" type="file" accept="image/*" data-avatar-input>
+                </div>
+
+                <div class="account-section">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label" for="accountFullName">Full name</label>
+                            <input class="form-control" id="accountFullName" value="{{ user.full_name }}" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="accountEmail">Email</label>
+                            <input class="form-control" id="accountEmail" value="{{ user.email }}" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" for="accountRole">Role</label>
+                            <input class="form-control" id="accountRole" value="{{ user.role.role_name }}" readonly>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="account-section">
+                    <h3 class="account-section-title">Account Settings</h3>
+                    <div class="list-group account-links">
+                        <a class="list-group-item list-group-item-action" href="{% url 'library:notification_list' %}">
+                            <i class="bi bi-bell"></i> Notification preferences
+                        </a>
+                        <button class="list-group-item list-group-item-action" type="button" data-ui-toast="Password changes remain controlled by the configured authentication provider.">
+                            <i class="bi bi-shield-lock"></i> Change password
+                        </button>
+                        {% if user.can_manage_library %}
+                            <a class="list-group-item list-group-item-action" href="{% url 'library:entity_list' entity='users' %}">
+                                <i class="bi bi-person-gear"></i> Manage user profile
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <footer class="public-footer">
+            <span>Library Management System v1.0.0</span>
+            <span>University Library - Copyright {% now "Y" %}</span>
+        </footer>
+        </main>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}" defer></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+{% extends "library/base.html" %}
+{% load static %}
+
+{% block title %}Login | Library Management System{% endblock %}
+
+{% block content %}
+{% get_static_prefix as STATIC_PREFIX %}
+<div class="auth-page-shell public-hero" id="home">
+    <div class="auth-panel shadow-sm" id="login-card">
+        <div class="row g-0 align-items-stretch">
+            <div class="col-lg-7">
+                <div class="auth-image-wrap">
+                    <img
+                        src="{{ STATIC_PREFIX }}images/library-login.jpg"
+                        class="auth-image"
+                        alt="University library reading area"
+                    >
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="auth-form-panel">
+                    <div class="auth-kicker">University Library</div>
+                    <h1 class="h4 mb-1">Library Management System</h1>
+                    <p class="text-secondary mb-4">
+                        {% if use_supabase_auth %}Sign in with Supabase Auth.{% else %}Sign in to continue.{% endif %}
+                    </p>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.email.id_for_label }}">
+                                {% if use_supabase_auth %}Email address{% else %}Email or username{% endif %}
+                            </label>
+                            {{ form.email }}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.password.id_for_label }}">Password</label>
+                            {{ form.password }}
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+                        <button class="btn btn-primary w-100" type="submit">Login</button>
+                    </form>
+                    <div class="auth-link-row small mt-3">
+                        <a href="/password-reset/">Forgot password?</a>
+                        <span>
+                            <span class="text-secondary">New member?</span>
+                            <a href="{% url 'library:register' %}">Create an account</a>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="public-section" id="public-search">
+    <div class="public-section-header">
+        <div>
+            <div class="page-kicker">Public Catalog</div>
+            <h2 class="public-title">Search library books before signing in</h2>
+            <p class="public-subtitle">
+                A presentation-ready catalog preview for students, teachers, staff, and visitors.
+            </p>
+        </div>
+        <span class="section-icon text-bg-primary"><i class="bi bi-search"></i></span>
+    </div>
+
+    <div class="public-search-panel">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input
+                class="form-control"
+                type="search"
+                placeholder="Search by title, author, category, ISBN, or book code"
+                data-public-book-search="#publicBookGrid"
+                aria-label="Search public catalog preview"
+            >
+        </div>
+    </div>
+
+    <div class="row g-3" id="publicBookGrid">
+        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="clean code robert c martin programming software engineering isbn 9780132350884 code BK-1001 available">
+            <article class="public-book-card">
+                <div class="book-cover book-cover-blue"><i class="bi bi-code-slash"></i></div>
+                <div class="book-meta">
+                    <span class="badge text-bg-success">Available</span>
+                    <span class="badge text-bg-light border">BK-1001</span>
+                </div>
+                <h3>Clean Code</h3>
+                <p>Robert C. Martin</p>
+                <small>Programming - ISBN 9780132350884</small>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="database system concepts abraham silberschatz database isbn 9780073523323 code BK-1002 borrowed">
+            <article class="public-book-card">
+                <div class="book-cover book-cover-green"><i class="bi bi-database"></i></div>
+                <div class="book-meta">
+                    <span class="badge text-bg-warning">Borrowed</span>
+                    <span class="badge text-bg-light border">BK-1002</span>
+                </div>
+                <h3>Database System Concepts</h3>
+                <p>Abraham Silberschatz</p>
+                <small>Database - ISBN 9780073523323</small>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="computer networking james kurose keith ross networking isbn 9780133594140 code BK-1003 available">
+            <article class="public-book-card">
+                <div class="book-cover book-cover-red"><i class="bi bi-router"></i></div>
+                <div class="book-meta">
+                    <span class="badge text-bg-success">Available</span>
+                    <span class="badge text-bg-light border">BK-1003</span>
+                </div>
+                <h3>Computer Networking</h3>
+                <p>James Kurose, Keith Ross</p>
+                <small>Networking - ISBN 9780133594140</small>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3" data-public-book-card data-search-text="introduction to algorithms thomas cormen algorithms isbn 9780262033848 code BK-1004 available">
+            <article class="public-book-card">
+                <div class="book-cover book-cover-purple"><i class="bi bi-diagram-3"></i></div>
+                <div class="book-meta">
+                    <span class="badge text-bg-success">Available</span>
+                    <span class="badge text-bg-light border">BK-1004</span>
+                </div>
+                <h3>Introduction to Algorithms</h3>
+                <p>Thomas H. Cormen</p>
+                <small>Algorithms - ISBN 9780262033848</small>
+            </article>
+        </div>
+    </div>
+
+    <div class="public-empty-state d-none" data-public-book-empty>
+        <i class="bi bi-search"></i>
+        <h3>No matching books found</h3>
+        <p>Try a different title, author, category, ISBN, or book code.</p>
+    </div>
+</section>
+
+<section class="public-section" id="about">
+    <div class="public-section-header">
+        <div>
+            <div class="page-kicker">About</div>
+            <h2 class="public-title">Designed for a modern university library</h2>
+            <p class="public-subtitle">
+                The system supports accurate cataloging, controlled borrowing, fine tracking, notifications, and management reports.
+            </p>
+        </div>
+        <span class="section-icon text-bg-success"><i class="bi bi-building-check"></i></span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <article class="public-info-card">
+                <i class="bi bi-journal-check"></i>
+                <h3>Organized Catalog</h3>
+                <p>Books are classified by category, author, publisher, ISBN, code, status, and availability.</p>
+            </article>
+        </div>
+        <div class="col-md-4">
+            <article class="public-info-card">
+                <i class="bi bi-arrow-left-right"></i>
+                <h3>Circulation Control</h3>
+                <p>Borrowing, returns, fines, and notifications are handled through a consistent staff workflow.</p>
+            </article>
+        </div>
+        <div class="col-md-4">
+            <article class="public-info-card">
+                <i class="bi bi-graph-up-arrow"></i>
+                <h3>Decision Reports</h3>
+                <p>Reports help librarians review books, fines, members, and borrowing activity for better planning.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<section class="public-section" id="contact">
+    <div class="public-section-header">
+        <div>
+            <div class="page-kicker">Contact</div>
+            <h2 class="public-title">Library support and opening hours</h2>
+            <p class="public-subtitle">
+                Contact the library desk for borrowing support, account help, or catalog questions.
+            </p>
+        </div>
+        <span class="section-icon text-bg-info"><i class="bi bi-headset"></i></span>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-4">
+            <div class="public-contact-card">
+                <i class="bi bi-geo-alt"></i>
+                <span>University Library Building</span>
+                <strong>Main Campus, Student Services Area</strong>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="public-contact-card">
+                <i class="bi bi-clock"></i>
+                <span>Opening Hours</span>
+                <strong>Monday to Friday, 8:00 AM to 5:00 PM</strong>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="public-contact-card">
+                <i class="bi bi-envelope"></i>
+                <span>Email Support</span>
+                <strong>library@example.edu</strong>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

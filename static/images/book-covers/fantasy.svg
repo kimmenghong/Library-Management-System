@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Fantasy book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#581c87"/><stop offset="1" stop-color="#047857"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <path d="M180 78l28 74 78 6-60 50 18 76-64-40-64 40 18-76-60-50 78-6z" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M96 312c44-26 124-26 168 0" stroke="#d8b4fe" stroke-width="14" stroke-linecap="round"/>
+  <text x="40" y="354" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">The Dragon</text>
+  <text x="40" y="406" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">Crown</text>
+  <text x="40" y="444" fill="#ede9fe" font-family="Arial, sans-serif" font-size="18">Fantasy</text>
+</svg>

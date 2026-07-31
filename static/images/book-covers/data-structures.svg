@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Data Structures book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#164e63"/><stop offset="1" stop-color="#22c55e"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <path d="M180 108v58M180 166l-78 62M180 166l78 62M102 228v58M258 228v58" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+  <rect x="142" y="80" width="76" height="58" rx="14" fill="none" stroke="#fff" stroke-width="14"/><rect x="64" y="228" width="76" height="58" rx="14" fill="none" stroke="#fff" stroke-width="14"/><rect x="220" y="228" width="76" height="58" rx="14" fill="none" stroke="#fff" stroke-width="14"/>
+  <text x="40" y="354" fill="#fff" font-family="Arial, sans-serif" font-size="36" font-weight="700">Data</text>
+  <text x="40" y="402" fill="#fff" font-family="Arial, sans-serif" font-size="36" font-weight="700">Structures</text>
+  <text x="40" y="440" fill="#dcfce7" font-family="Arial, sans-serif" font-size="18">Programming</text>
+</svg>

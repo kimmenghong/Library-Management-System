@@ -1,0 +1,164 @@
+{% extends "library/base.html" %}
+
+{% block title %}Dashboard | Library Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-kicker">Overview</div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Current circulation, stock, fines, and borrowing activity.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-secondary" type="button" data-print-page>
+            <i class="bi bi-printer me-1"></i>Print
+        </button>
+        {% if can_manage %}
+            <a class="btn btn-primary" href="{% url 'library:borrow_create' %}">
+                <i class="bi bi-plus-lg me-1"></i>Issue Book
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card p-3">
+            <div class="metric-icon text-bg-primary"><i class="bi bi-book"></i></div>
+            <div class="metric-label">Total Books</div>
+            <div class="metric-value">{{ total_books }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card p-3">
+            <div class="metric-icon text-bg-info"><i class="bi bi-people"></i></div>
+            <div class="metric-label">Members</div>
+            <div class="metric-value">{{ total_members }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card p-3">
+            <div class="metric-icon text-bg-success"><i class="bi bi-check2-circle"></i></div>
+            <div class="metric-label">Available</div>
+            <div class="metric-value">{{ available_books }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card p-3">
+            <div class="metric-icon text-bg-primary"><i class="bi bi-arrow-left-right"></i></div>
+            <div class="metric-label">Borrowed</div>
+            <div class="metric-value">{{ borrowed_books }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card p-3">
+            <div class="metric-icon text-bg-danger"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="metric-label">Overdue</div>
+            <div class="metric-value">{{ overdue_books }}</div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card p-3">
+            <div class="metric-icon text-bg-warning"><i class="bi bi-cash-stack"></i></div>
+            <div class="metric-label">Open Fines</div>
+            <div class="metric-value">{{ unpaid_fines }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <a class="widget-card" href="{% url 'library:borrow_list' %}">
+            <span class="widget-icon text-bg-primary"><i class="bi bi-clock-history"></i></span>
+            <span>
+                <strong>Recent Activity</strong>
+                <small>{{ recent_borrows|length }} latest circulation records</small>
+            </span>
+        </a>
+    </div>
+    {% if can_manage %}
+        <div class="col-md-6 col-xl-3">
+            <a class="widget-card" href="{% url 'library:entity_list' entity='members' %}">
+                <span class="widget-icon text-bg-info"><i class="bi bi-person-plus"></i></span>
+                <span>
+                    <strong>Recent Members</strong>
+                    <small>Review member directory and status</small>
+                </span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <a class="widget-card" href="{% url 'library:report_list' %}">
+                <span class="widget-icon text-bg-success"><i class="bi bi-graph-up-arrow"></i></span>
+                <span>
+                    <strong>Popular Books</strong>
+                    <small>Open most-borrowed report summary</small>
+                </span>
+            </a>
+        </div>
+    {% endif %}
+    <div class="col-md-6 col-xl-3">
+        <a class="widget-card" href="{% url 'library:fine_list' %}">
+            <span class="widget-icon text-bg-warning"><i class="bi bi-wallet2"></i></span>
+            <span>
+                <strong>Fine Summary</strong>
+                <small>{{ unpaid_fines }} open fine{{ unpaid_fines|pluralize }} need review</small>
+            </span>
+        </a>
+    </div>
+</div>
+
+<section class="content-panel p-0">
+    <div class="panel-heading">
+        <div>
+            <h2 class="panel-title">Recent Borrowing</h2>
+            <p class="panel-subtitle">Latest member borrowing and return status.</p>
+        </div>
+        <div class="table-tool-group" data-table-tools="#dashboardBorrowTable">
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle-column-filters>
+                <i class="bi bi-layout-three-columns me-1"></i>Columns
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="excel">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" data-print-table>
+                <i class="bi bi-printer me-1"></i>Print
+            </button>
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'library:borrow_list' %}">
+                <i class="bi bi-list-ul me-1"></i>View all
+            </a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table" id="dashboardBorrowTable" data-enhanced-table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Member</th>
+                    <th>Book</th>
+                    <th>Borrowed</th>
+                    <th>Due</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in recent_borrows %}
+                    <tr>
+                        <td class="text-secondary">#{{ record.borrow_id }}</td>
+                        <td><span class="fw-semibold">{{ record.member.member_code }}</span></td>
+                        <td>{{ record.book.title }}</td>
+                        <td>{{ record.borrow_date }}</td>
+                        <td>{{ record.due_date }}</td>
+                        <td>
+                            <span class="badge status-badge text-bg-{% if record.status == 'overdue' %}danger{% elif record.status == 'returned' %}success{% else %}primary{% endif %}">
+                                {{ record.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="empty-state">No borrowing records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

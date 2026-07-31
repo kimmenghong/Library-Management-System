@@ -1,0 +1,126 @@
+{% extends "library/base.html" %}
+
+{% block title %}Books | Library Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-kicker">Catalog</div>
+        <h1 class="page-title">Books</h1>
+        <p class="page-subtitle">Search and manage the lecturer-defined `books` table.</p>
+    </div>
+    {% if can_manage %}
+        <a class="btn btn-primary" href="{% url 'library:book_create' %}">
+            <i class="bi bi-plus-lg me-1"></i>Add Book
+        </a>
+    {% endif %}
+</div>
+
+<form method="get" class="toolbar-panel mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-lg-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input class="form-control" type="search" name="q" value="{{ query }}" placeholder="Search title, ISBN, author, publisher, category, shelf">
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <select class="form-select" name="status">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <select class="form-select" name="category">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.category_id }}" {% if selected_category == category.category_id|stringformat:"s" %}selected{% endif %}>{{ category.category_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4 col-lg-2 d-flex gap-2">
+            <button class="btn btn-primary flex-fill" type="submit">
+                <i class="bi bi-funnel me-1"></i>Filter
+            </button>
+            <a class="btn btn-outline-secondary" href="{% url 'library:book_list' %}" aria-label="Reset filters">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+        <div class="col-12">
+            <div class="table-tool-group" data-table-tools="#bookTable">
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle-column-filters>
+                    <i class="bi bi-layout-three-columns me-1"></i>Columns
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="excel">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="pdf">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-print-table>
+                    <i class="bi bi-printer me-1"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="content-panel p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table" id="bookTable" data-enhanced-table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>ISBN</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    {% if can_manage %}<th class="text-end">Actions</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                    <tr>
+                        <td class="text-secondary">#{{ book.book_id }}</td>
+                        <td>
+                            <div class="fw-semibold">{{ book.title }}</div>
+                            <div class="small text-secondary"><i class="bi bi-geo-alt me-1"></i>{{ book.shelf_location|default:"No shelf" }}</div>
+                        </td>
+                        <td><code class="table-code">{{ book.isbn }}</code></td>
+                        <td>{{ book.author.author_name }}</td>
+                        <td><span class="badge text-bg-light border">{{ book.category.category_name }}</span></td>
+                        <td>
+                            <span class="fw-semibold">{{ book.available_quantity }}</span>
+                            <span class="text-secondary">/ {{ book.quantity }}</span>
+                        </td>
+                        <td>
+                            <span class="badge status-badge text-bg-{% if book.status == 'available' %}success{% elif book.status == 'borrowed' %}primary{% elif book.status == 'lost' or book.status == 'damaged' %}danger{% else %}warning{% endif %}">
+                                {{ book.get_status_display }}
+                            </span>
+                        </td>
+                        {% if can_manage %}
+                            <td class="text-end text-nowrap">
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'library:book_update' book.book_id %}">
+                                    <i class="bi bi-pencil-square"></i>
+                                    <span class="visually-hidden">Edit</span>
+                                </a>
+                                <a class="btn btn-sm btn-outline-danger" href="{% url 'library:book_delete' book.book_id %}">
+                                    <i class="bi bi-trash"></i>
+                                    <span class="visually-hidden">Delete</span>
+                                </a>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="8" class="empty-state">No books found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "library/includes/pagination.html" %}
+{% endblock %}

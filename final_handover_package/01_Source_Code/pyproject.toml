@@ -1,0 +1,56 @@
+[tool.black]
+line-length = 88
+target-version = ["py314"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  \.venv
+  | staticfiles
+  | media
+  | apps/library/migrations
+  | apps/accounts
+  | apps/activity
+  | apps/announcements
+  | apps/api
+  | apps/catalog
+  | apps/circulation
+  | apps/dashboard
+  | apps/digital_library
+  | apps/fines
+  | apps/import_export
+  | apps/members
+  | apps/notifications
+  | apps/reports
+  | apps/reviews
+  | apps/settings_app
+  | apps/status_tracking
+  | apps/support
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_glob = [
+    ".venv/*",
+    "staticfiles/*",
+    "media/*",
+    "apps/library/migrations/*",
+    "apps/accounts/*",
+    "apps/activity/*",
+    "apps/announcements/*",
+    "apps/api/*",
+    "apps/catalog/*",
+    "apps/circulation/*",
+    "apps/dashboard/*",
+    "apps/digital_library/*",
+    "apps/fines/*",
+    "apps/import_export/*",
+    "apps/members/*",
+    "apps/notifications/*",
+    "apps/reports/*",
+    "apps/reviews/*",
+    "apps/settings_app/*",
+    "apps/status_tracking/*",
+    "apps/support/*",
+]

@@ -1,3 +1,4 @@
+import re
 from datetime import timedelta
 from decimal import Decimal
 
@@ -19,6 +20,7 @@ from apps.library.models import (
     Role,
     User,
 )
+from apps.library.views import PUBLIC_CATALOG_BOOKS
 
 DEFAULT_PASSWORD = "Library@123"
 
@@ -155,7 +157,34 @@ class Command(BaseCommand):
             "Business": "Management, accounting, and entrepreneurship resources.",
             "Engineering": "Engineering theory and practical references.",
             "Literature": "Novels, criticism, and language studies.",
+            "Comedy": "Humorous stories and light reading.",
+            "Fantasy": "Magic, folklore, and imagined worlds.",
+            "Adventure": "Action, exploration, and survival stories.",
+            "Self-Help": "Personal development and productivity resources.",
+            "Fiction": "General novels and literary fiction.",
+            "Romance": "Relationship and emotional fiction.",
+            "Mystery": "Detective, crime, and puzzle stories.",
+            "Horror": "Suspense, fear, and supernatural fiction.",
+            "Science Fiction": "Space, technology, and future-focused fiction.",
+            "Children's Literature": "Books for young readers.",
+            "Finance": "Money, investing, and financial literacy.",
+            "Biography": "Life stories and personal histories.",
+            "History": "Historical analysis and world events.",
+            "Drama": "Plays and dramatic literature.",
+            "Productivity": "Focused work and performance improvement.",
+            "Memoir": "Personal narratives and reflective life writing.",
+            "Programming": "Programming languages, patterns, and software craft.",
+            "Networking": "Computer networking and internet architecture.",
+            "Operating Systems": "Operating system design and system software.",
+            "Database": "Database systems, SQL, and data management.",
+            "Artificial Intelligence": "Artificial intelligence and machine learning.",
+            "Classic Literature": "Enduring literary works and classic novels.",
         }
+        for book in PUBLIC_CATALOG_BOOKS:
+            values.setdefault(
+                book["category"],
+                f"{book['category']} resources for the university library.",
+            )
         categories = {}
         for name, description in values.items():
             category, _ = Category.objects.update_or_create(
@@ -171,7 +200,53 @@ class Command(BaseCommand):
             "Andrew S. Tanenbaum": "Computer scientist and textbook author.",
             "Thomas H. Cormen": "Computer scientist and algorithms educator.",
             "Jane Austen": "English novelist known for social commentary.",
+            "Jeff Kinney": "Author of humorous children's fiction.",
+            "J. K. Rowling": "Author of fantasy literature.",
+            "J. R. R. Tolkien": "Author of classic fantasy and adventure literature.",
+            "James Clear": "Author focused on habits and personal improvement.",
+            "Paulo Coelho": "Author of inspirational fiction.",
+            "John Green": "Author of contemporary young adult fiction.",
+            "Arthur Conan Doyle": "Author of classic detective fiction.",
+            "Bram Stoker": "Author of classic gothic horror.",
+            "Frank Herbert": "Author of science fiction literature.",
+            "Antoine de Saint-Exupery": "Author of children's literature.",
+            "Robert Kiyosaki": "Author of personal finance books.",
+            "Napoleon Hill": "Author of self-help and success literature.",
+            "Morgan Housel": "Author of finance and behavior books.",
+            "Suzanne Collins": "Author of adventure and dystopian fiction.",
+            "James Dashner": "Author of science fiction and adventure novels.",
+            "Harper Lee": "Author of American fiction.",
+            "Anne Frank": "Diary author and historical figure.",
+            "Walter Isaacson": "Biographer and historian.",
+            "Yuval Noah Harari": "Historian and author.",
+            "Sun Tzu": "Classical military strategist.",
+            "F. Scott Fitzgerald": "Author of American literary fiction.",
+            "William Shakespeare": "Playwright and poet.",
+            "E. B. White": "Author of children's literature.",
+            "Roald Dahl": "Author of children's literature.",
+            "Dan Brown": "Author of mystery and thriller fiction.",
+            "Stephen King": "Author of horror and suspense fiction.",
+            "Stephen R. Covey": "Author of leadership and self-help books.",
+            "Kathy Sierra": "Technical author.",
+            "Kathy Sierra, Bert Bates": "Technical authors of Head First Java.",
+            "Herbert Schildt": "Programming author.",
+            "Eric Matthes": "Programming educator and author.",
+            "Joshua Bloch": "Software engineer and Java author.",
+            "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides": "Authors of Design Patterns.",
+            "James Kurose, Keith Ross": "Computer networking textbook authors.",
+            "Abraham Silberschatz, Peter B. Galvin, Greg Gagne": "Operating systems textbook authors.",
+            "Abraham Silberschatz, Henry F. Korth, S. Sudarshan": "Database systems textbook authors.",
+            "Stuart Russell, Peter Norvig": "Artificial intelligence textbook authors.",
+            "Cal Newport": "Author of productivity and focus books.",
+            "Charles Duhigg": "Author of habit and productivity books.",
+            "Khaled Hosseini": "Author of contemporary fiction.",
+            "Jojo Moyes": "Author of romance and contemporary fiction.",
+            "R. J. Palacio": "Author of children's literature.",
+            "Tara Westover": "Memoir author.",
+            "Michelle Obama": "Memoir author.",
         }
+        for book in PUBLIC_CATALOG_BOOKS:
+            values.setdefault(book["author"], f"Author of {book['title']}.")
         authors = {}
         for name, biography in values.items():
             author, _ = Author.objects.update_or_create(
@@ -199,6 +274,17 @@ class Command(BaseCommand):
                 "email": "press@university.test",
             },
         }
+        for book in PUBLIC_CATALOG_BOOKS:
+            if book.get("publisher"):
+                slug = re.sub(r"[^a-z0-9]+", "", book["publisher"].lower())
+                values.setdefault(
+                    book["publisher"],
+                    {
+                        "address": "Demonstration publisher address",
+                        "contact_number": "000000000",
+                        "email": f"contact@{slug or 'publisher'}.test",
+                    },
+                )
         publishers = {}
         for name, defaults in values.items():
             publisher, _ = Publisher.objects.update_or_create(
@@ -209,61 +295,61 @@ class Command(BaseCommand):
         return publishers
 
     def _create_books(self, categories, authors, publishers):
-        values = [
-            {
-                "isbn": "9780132350884",
-                "title": "Clean Code",
-                "category": categories["Computer Science"],
-                "author": authors["Robert C. Martin"],
-                "publisher": publishers["Pearson Education"],
-                "edition": "1st",
-                "publication_year": 2008,
-                "quantity": 3,
-                "shelf_location": "CS-A01",
-            },
-            {
-                "isbn": "9780132126953",
-                "title": "Computer Networks",
-                "category": categories["Computer Science"],
-                "author": authors["Andrew S. Tanenbaum"],
-                "publisher": publishers["Pearson Education"],
-                "edition": "5th",
-                "publication_year": 2010,
-                "quantity": 2,
-                "shelf_location": "CS-A02",
-            },
-            {
-                "isbn": "9780262046305",
-                "title": "Introduction to Algorithms",
-                "category": categories["Computer Science"],
-                "author": authors["Thomas H. Cormen"],
-                "publisher": publishers["MIT Press"],
-                "edition": "4th",
-                "publication_year": 2022,
-                "quantity": 1,
-                "shelf_location": "CS-A03",
-            },
-            {
-                "isbn": "9780141439518",
-                "title": "Pride and Prejudice",
-                "category": categories["Literature"],
-                "author": authors["Jane Austen"],
-                "publisher": publishers["University Press"],
-                "edition": "Revised",
-                "publication_year": 2002,
-                "quantity": 2,
-                "shelf_location": "LIT-B01",
-            },
-        ]
+        technical_categories = {
+            "AI",
+            "Algorithms",
+            "Computer Architecture",
+            "Computer Science",
+            "Database",
+            "Networking",
+            "Operating Systems",
+            "Programming",
+            "Software Engineering",
+            "Web Development",
+        }
         books = {}
-        for defaults in values:
-            isbn = defaults.pop("isbn")
+        for index, catalog_book in enumerate(PUBLIC_CATALOG_BOOKS, start=1):
+            category_name = catalog_book["category"]
+            available_copies = int(catalog_book["available_copies"])
+            quantity = int(
+                catalog_book.get(
+                    "total_copies",
+                    max(
+                        available_copies
+                        + (0 if catalog_book["status"] == "Available" else 1),
+                        1,
+                    ),
+                )
+            )
+            publisher_name = catalog_book.get("publisher") or (
+                "Pearson Education"
+                if category_name in technical_categories
+                else "University Press"
+            )
             book, _ = Book.objects.update_or_create(
-                isbn=isbn,
+                isbn=catalog_book["isbn"],
                 defaults={
-                    **defaults,
-                    "available_quantity": defaults["quantity"],
-                    "status": Book.AVAILABLE,
+                    "title": catalog_book["title"],
+                    "category": categories[category_name],
+                    "author": authors[catalog_book["author"]],
+                    "publisher": publishers[publisher_name],
+                    "edition": catalog_book.get("edition", "Demo"),
+                    "publication_year": catalog_book["year"],
+                    "quantity": quantity,
+                    "available_quantity": available_copies,
+                    "shelf_location": catalog_book.get(
+                        "shelf_location",
+                        f"PUB-{index:03d}",
+                    ),
+                    "status": (
+                        Book.BORROWED
+                        if catalog_book["status"] == "Borrowed"
+                        else (
+                            Book.UNDER_REPAIR
+                            if catalog_book["status"] == "Under Maintenance"
+                            else Book.AVAILABLE
+                        )
+                    ),
                 },
             )
             books[book.title] = book
@@ -318,7 +404,7 @@ class Command(BaseCommand):
         )
         returned = self._upsert_borrow(
             members["teacher"],
-            books["Computer Networks"],
+            books["Database System Concepts"],
             {
                 "issued_by": users["librarian"],
                 "received_by": users["assistant"],
@@ -345,13 +431,21 @@ class Command(BaseCommand):
     def _synchronise_book_stock(self, books):
         active_statuses = [BorrowRecord.BORROWED, BorrowRecord.OVERDUE]
         for book in books.values():
+            record_count = book.borrow_records.count()
+            if record_count == 0:
+                continue
+
             active_count = book.borrow_records.filter(
                 status__in=active_statuses
             ).count()
-            book.available_quantity = max(book.quantity - active_count, 0)
-            book.status = (
-                Book.BORROWED if book.available_quantity == 0 else Book.AVAILABLE
-            )
+            if active_count:
+                book.available_quantity = max(book.quantity - active_count, 0)
+                book.status = (
+                    Book.BORROWED if book.available_quantity == 0 else Book.AVAILABLE
+                )
+            else:
+                book.available_quantity = book.quantity
+                book.status = Book.AVAILABLE
             book.save(update_fields=["available_quantity", "status", "updated_at"])
 
     def _create_fines(self, borrows, members):

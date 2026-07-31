@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Artificial Intelligence book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7c3aed"/><stop offset="1" stop-color="#db2777"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <rect x="102" y="104" width="156" height="156" rx="38" fill="none" stroke="#fff" stroke-width="14"/>
+  <path d="M137 152h.1M223 152h.1M145 210c22 18 48 18 70 0M78 182h24M258 182h24M180 80v24M180 260v24" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+  <text x="38" y="350" fill="#fff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Artificial</text>
+  <text x="38" y="398" fill="#fff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Intelligence</text>
+  <text x="38" y="436" fill="#fce7f3" font-family="Arial, sans-serif" font-size="18">AI and Machine Learning</text>
+</svg>

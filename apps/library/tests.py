@@ -4,6 +4,8 @@ from datetime import timedelta
 from decimal import Decimal
 from unittest.mock import Mock, patch
 
+from django.contrib.staticfiles import finders
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -23,7 +25,13 @@ from .models import (
     User,
 )
 from .services.supabase_auth import SupabaseAuthIdentity, SupabaseAuthService
-from .views import LocalUserSyncError, _validate_local_login_user
+from .views import (
+    PUBLIC_CATALOG_BOOKS,
+    PUBLIC_CATALOG_BY_ISBN,
+    PUBLIC_CATALOG_PAGE_SIZE,
+    LocalUserSyncError,
+    _validate_local_login_user,
+)
 
 
 class LibraryTestDataMixin:
@@ -65,6 +73,377 @@ class LibraryTestDataMixin:
             member_type=Member.STUDENT,
             department="Computer Science",
         )
+
+
+class PublicCatalogTests(TestCase):
+    def _card_count(self, response):
+        return response.content.decode().count("data-public-book-card")
+
+    def _detail_url(self, book_code="BK-2001"):
+        return reverse("library:public_book_detail", args=[book_code])
+
+    def _code_for_title(self, title):
+        return next(
+            book["code"] for book in PUBLIC_CATALOG_BOOKS if book["title"] == title
+        )
+
+    def test_public_catalog_data_is_unique_and_complete(self):
+        isbns = [book["isbn"] for book in PUBLIC_CATALOG_BOOKS]
+        codes = [book["code"] for book in PUBLIC_CATALOG_BOOKS]
+        missing_covers = [
+            book["cover"]
+            for book in PUBLIC_CATALOG_BOOKS
+            if finders.find(book["cover"]) is None
+        ]
+
+        self.assertGreaterEqual(len(PUBLIC_CATALOG_BOOKS), 40)
+        self.assertEqual(len(isbns), len(set(isbns)))
+        self.assertEqual(len(codes), len(set(codes)))
+        self.assertEqual(missing_covers, [])
+        self.assertEqual(
+            sum(1 for book in PUBLIC_CATALOG_BOOKS if "Harry Potter" in book["title"]),
+            7,
+        )
+        required_titles = {
+            "Harry Potter and the Chamber of Secrets",
+            "Harry Potter and the Deathly Hallows",
+            "The Lord of the Rings",
+            "The Midnight Library",
+            "Ikigai: The Japanese Secret to a Long and Happy Life",
+            "The Silent Patient",
+            "The Hobbit",
+            "Atomic Habits",
+            "Clean Code",
+            "The Alchemist",
+            "The Psychology of Money",
+            "Introduction to Algorithms",
+            "Design Patterns",
+            "Computer Networking",
+            "Operating System Concepts",
+            "Database System Concepts",
+            "Artificial Intelligence: A Modern Approach",
+            "Clean Architecture",
+            "Head First Java",
+            "Python Crash Course",
+            "Effective Java",
+            "Diary of a Wimpy Kid",
+            "To Kill a Mockingbird",
+            "Pride and Prejudice",
+            "The Adventures of Sherlock Holmes",
+            "It",
+            "Macbeth",
+            "Me Before You",
+            "The Hunger Games",
+            "The Diary of a Young Girl",
+            "Wonder",
+        }
+        catalog_titles = {book["title"] for book in PUBLIC_CATALOG_BOOKS}
+        self.assertTrue(required_titles.issubset(catalog_titles))
+
+    def test_requested_public_catalog_books_have_exact_metadata(self):
+        expected = {
+            "The Midnight Library": {
+                "author": "Matt Haig",
+                "category": "Fiction",
+                "isbn": "9780525559474",
+                "code": "BK-2051",
+                "year": 2020,
+                "edition": "First Edition",
+                "publisher": "Canongate Books",
+                "shelf_location": "FIC-A-01",
+                "total_copies": 15,
+                "available_copies": 12,
+                "status": "Available",
+                "cover": "images/books/the_midnight_library.jpg",
+            },
+            "Ikigai: The Japanese Secret to a Long and Happy Life": {
+                "author": "Héctor García and Francesc Miralles",
+                "category": "Self-Help",
+                "isbn": "9780143130727",
+                "code": "BK-2052",
+                "year": 2017,
+                "edition": "First Edition",
+                "publisher": "Penguin Books",
+                "shelf_location": "SEL-B-02",
+                "total_copies": 10,
+                "available_copies": 8,
+                "status": "Available",
+                "cover": "images/books/ikigai.jpg",
+            },
+            "The Silent Patient": {
+                "author": "Alex Michaelides",
+                "category": "Mystery & Thriller",
+                "isbn": "9781250301697",
+                "code": "BK-2053",
+                "year": 2019,
+                "edition": "First Edition",
+                "publisher": "Celadon Books",
+                "shelf_location": "MYS-C-03",
+                "total_copies": 12,
+                "available_copies": 5,
+                "status": "Borrowed",
+                "cover": "images/books/the_silent_patient.jpg",
+            },
+        }
+        catalog_by_title = {book["title"]: book for book in PUBLIC_CATALOG_BOOKS}
+
+        for title, fields in expected.items():
+            with self.subTest(title=title):
+                book = catalog_by_title[title]
+                for key, value in fields.items():
+                    self.assertEqual(book[key], value)
+                self.assertIsNotNone(finders.find(book["cover"]))
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_public_catalog_first_page_renders_twelve_books(self):
+        response = self.client.get(reverse("library:login"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self._card_count(response), PUBLIC_CATALOG_PAGE_SIZE)
+        self.assertEqual(response.context["public_catalog_page"].start_index(), 1)
+        self.assertEqual(response.context["public_catalog_page"].end_index(), 12)
+        self.assertEqual(
+            response.context["public_catalog_filtered_count"],
+            len(PUBLIC_CATALOG_BOOKS),
+        )
+        self.assertContains(response, 'loading="lazy"')
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_public_catalog_searches_title_author_category_isbn_and_code(self):
+        cases = [
+            ("Atomic Habits", "Atomic Habits"),
+            ("J. K. Rowling", "Harry Potter and the Sorcerer"),
+            ("Finance", "Rich Dad Poor Dad"),
+            ("9780132350884", "Clean Code"),
+            (
+                self._code_for_title("The Pragmatic Programmer"),
+                "The Pragmatic Programmer",
+            ),
+            ("Matt Haig", "The Midnight Library"),
+            ("9780143130727", "Ikigai"),
+            ("Mystery & Thriller", "The Silent Patient"),
+            ("BK-2053", "The Silent Patient"),
+        ]
+
+        for term, expected_title in cases:
+            with self.subTest(term=term):
+                response = self.client.get(
+                    reverse("library:login"),
+                    {"catalog_q": term},
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, expected_title)
+                self.assertGreaterEqual(self._card_count(response), 1)
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_public_catalog_filters_by_status_and_category(self):
+        status_response = self.client.get(
+            reverse("library:login"),
+            {"catalog_status": "Under Maintenance"},
+        )
+        category_response = self.client.get(
+            reverse("library:login"),
+            {"catalog_category": "Finance"},
+        )
+
+        self.assertEqual(status_response.status_code, 200)
+        self.assertContains(status_response, "Under Maintenance")
+        self.assertTrue(
+            all(
+                book["status"] == "Under Maintenance"
+                for book in status_response.context["public_catalog_books"]
+            )
+        )
+        under_maintenance_count = sum(
+            1 for book in PUBLIC_CATALOG_BOOKS if book["status"] == "Under Maintenance"
+        )
+        self.assertEqual(
+            status_response.context["public_catalog_filtered_count"],
+            under_maintenance_count,
+        )
+        self.assertEqual(self._card_count(status_response), under_maintenance_count)
+
+        self.assertEqual(category_response.status_code, 200)
+        self.assertContains(category_response, "The Psychology of Money")
+        self.assertContains(category_response, "Rich Dad Poor Dad")
+        self.assertEqual(category_response.context["public_catalog_filtered_count"], 2)
+        self.assertEqual(self._card_count(category_response), 2)
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_public_catalog_uses_server_side_pagination(self):
+        first_page = self.client.get(reverse("library:login"))
+        second_page = self.client.get(
+            reverse("library:login"),
+            {"catalog_page": 2},
+        )
+
+        self.assertEqual(first_page.status_code, 200)
+        self.assertEqual(second_page.status_code, 200)
+        self.assertEqual(self._card_count(first_page), PUBLIC_CATALOG_PAGE_SIZE)
+        self.assertEqual(self._card_count(second_page), PUBLIC_CATALOG_PAGE_SIZE)
+        self.assertEqual(second_page.context["public_catalog_page"].start_index(), 13)
+        self.assertEqual(second_page.context["public_catalog_page"].end_index(), 24)
+        self.assertContains(second_page, "The Lean Startup")
+        self.assertNotContains(second_page, "Harry Potter and the Sorcerer")
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_public_catalog_combined_filter_empty_state(self):
+        response = self.client.get(
+            reverse("library:login"),
+            {
+                "catalog_q": "Harry Potter",
+                "catalog_status": "Available",
+                "catalog_category": "Finance",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self._card_count(response), 0)
+        self.assertContains(response, "No matching books found")
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_public_catalog_cards_link_to_detail_pages(self):
+        response = self.client.get(reverse("library:login"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "View Details")
+        self.assertContains(response, "/public/books/BK-2001/?catalog_page=1")
+
+    def test_public_book_detail_page_is_public_and_read_only(self):
+        response = self.client.get(self._detail_url("BK-2001"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Harry Potter and the Sorcerer")
+        self.assertContains(response, "J. K. Rowling")
+        self.assertContains(response, "University Press")
+        self.assertContains(response, "9780439708180")
+        self.assertContains(response, "BK-2001")
+        self.assertContains(response, "Login to Reserve")
+        self.assertNotContains(response, "Edit Book")
+        self.assertNotContains(response, "Delete Book")
+
+    def test_public_book_detail_invalid_code_returns_404(self):
+        response = self.client.get(self._detail_url("BK-9999"))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_public_book_detail_allows_logged_in_users_without_exposing_staff_actions(
+        self,
+    ):
+        role = Role.objects.create(role_name="Student")
+        user = User.objects.create_user(
+            username="public-detail-student",
+            email="public-detail-student@example.com",
+            password="StrongPass123!",
+            full_name="Public Detail Student",
+            role=role,
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(self._detail_url(self._code_for_title("The Hobbit")))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "The Hobbit")
+        self.assertContains(response, "Reservation Unavailable")
+        self.assertNotContains(response, "Login to Reserve")
+        self.assertNotContains(response, "Edit Book")
+
+    def test_public_book_detail_preserves_catalog_state_for_back_link(self):
+        response = self.client.get(
+            self._detail_url(self._code_for_title("The Psychology of Money")),
+            {
+                "catalog_q": "Finance",
+                "catalog_category": "Finance",
+                "catalog_page": 1,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["back_to_catalog_url"],
+            "/login/?catalog_q=Finance&catalog_category=Finance&catalog_page=1#public-search",
+        )
+        self.assertContains(
+            response,
+            "/login/?catalog_q=Finance&amp;catalog_category=Finance&amp;catalog_page=1#public-search",
+        )
+
+    def test_public_book_detail_shows_cover_fallback_and_related_books(self):
+        response = self.client.get(
+            self._detail_url(self._code_for_title("The Psychology of Money"))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "psychology_of_money.jpg")
+        self.assertContains(response, "fallback_book_cover.svg")
+        self.assertContains(response, "More in Finance")
+        self.assertContains(response, "Rich Dad Poor Dad")
+        self.assertLessEqual(len(response.context["related_books"]), 4)
+        self.assertTrue(
+            all(
+                related["category"] == "Finance"
+                for related in response.context["related_books"]
+            )
+        )
+
+    def test_requested_public_book_detail_pages_render(self):
+        cases = [
+            ("BK-2051", "The Midnight Library", "Canongate Books"),
+            (
+                "BK-2052",
+                "Ikigai: The Japanese Secret to a Long and Happy Life",
+                "Penguin Books",
+            ),
+            ("BK-2053", "The Silent Patient", "Celadon Books"),
+        ]
+
+        for code, title, publisher in cases:
+            with self.subTest(code=code):
+                response = self.client.get(self._detail_url(code))
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, title)
+                self.assertContains(response, publisher)
+                self.assertContains(response, code)
+                self.assertContains(response, "First Edition")
+
+    def test_seed_data_preserves_requested_public_book_metadata(self):
+        call_command("seed_data", verbosity=0)
+
+        midnight = Book.objects.select_related("publisher").get(isbn="9780525559474")
+        ikigai = Book.objects.select_related("publisher").get(isbn="9780143130727")
+        silent = Book.objects.select_related("publisher").get(isbn="9781250301697")
+
+        self.assertEqual(midnight.title, "The Midnight Library")
+        self.assertEqual(midnight.publisher.publisher_name, "Canongate Books")
+        self.assertEqual(midnight.edition, "First Edition")
+        self.assertEqual(midnight.shelf_location, "FIC-A-01")
+        self.assertEqual(midnight.quantity, 15)
+        self.assertEqual(midnight.available_quantity, 12)
+        self.assertEqual(midnight.status, Book.AVAILABLE)
+
+        self.assertEqual(ikigai.publisher.publisher_name, "Penguin Books")
+        self.assertEqual(ikigai.edition, "First Edition")
+        self.assertEqual(ikigai.shelf_location, "SEL-B-02")
+        self.assertEqual(ikigai.quantity, 10)
+        self.assertEqual(ikigai.available_quantity, 8)
+
+        self.assertEqual(silent.publisher.publisher_name, "Celadon Books")
+        self.assertEqual(silent.edition, "First Edition")
+        self.assertEqual(silent.shelf_location, "MYS-C-03")
+        self.assertEqual(silent.quantity, 12)
+        self.assertEqual(silent.available_quantity, 5)
+        self.assertEqual(silent.status, Book.BORROWED)
+
+    def test_seeded_books_have_public_catalog_cover_mapping(self):
+        call_command("seed_data", verbosity=0)
+
+        missing_catalog_covers = [
+            book.title
+            for book in Book.objects.all()
+            if book.isbn not in PUBLIC_CATALOG_BY_ISBN
+        ]
+
+        self.assertEqual(missing_catalog_covers, [])
 
 
 class DataDictionaryModelTests(LibraryTestDataMixin, TestCase):
@@ -203,6 +582,81 @@ class BorrowingWorkflowTests(LibraryTestDataMixin, TestCase):
         self.assertEqual(fine.amount, Decimal("5.00"))
         self.assertEqual(notification.notification_type, Notification.FINE)
 
+    @override_settings(FINE_RATE_PER_DAY=Decimal("2.50"))
+    def test_late_return_uses_configured_fine_rate(self):
+        today = timezone.localdate()
+        record = BorrowRecord.objects.create(
+            member=self.member,
+            book=self.book,
+            issued_by=self.admin_user,
+            borrow_date=today - timedelta(days=7),
+            due_date=today - timedelta(days=2),
+        )
+
+        response = self.client.post(
+            reverse("library:borrow_return", args=[record.borrow_id]),
+            {"return_date": today},
+        )
+
+        self.assertRedirects(response, reverse("library:borrow_list"))
+        fine = Fine.objects.get(borrow=record)
+        self.assertEqual(fine.amount, Decimal("5.00"))
+
+    def test_return_preserves_special_book_status(self):
+        today = timezone.localdate()
+        self.book.status = Book.DAMAGED
+        self.book.available_quantity = 1
+        self.book.save()
+        record = BorrowRecord.objects.create(
+            member=self.member,
+            book=self.book,
+            issued_by=self.admin_user,
+            borrow_date=today - timedelta(days=3),
+            due_date=today + timedelta(days=7),
+        )
+
+        response = self.client.post(
+            reverse("library:borrow_return", args=[record.borrow_id]),
+            {"return_date": today},
+        )
+
+        self.assertRedirects(response, reverse("library:borrow_list"))
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, Book.DAMAGED)
+        self.assertEqual(self.book.available_quantity, 2)
+
+    def test_dashboard_does_not_mutate_overdue_status(self):
+        today = timezone.localdate()
+        record = BorrowRecord.objects.create(
+            member=self.member,
+            book=self.book,
+            issued_by=self.admin_user,
+            borrow_date=today - timedelta(days=10),
+            due_date=today - timedelta(days=1),
+        )
+
+        response = self.client.get(reverse("library:dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        record.refresh_from_db()
+        self.assertEqual(record.status, BorrowRecord.BORROWED)
+        self.assertEqual(record.effective_status, BorrowRecord.OVERDUE)
+
+    def test_sync_overdue_command_updates_status_explicitly(self):
+        today = timezone.localdate()
+        record = BorrowRecord.objects.create(
+            member=self.member,
+            book=self.book,
+            issued_by=self.admin_user,
+            borrow_date=today - timedelta(days=10),
+            due_date=today - timedelta(days=1),
+        )
+
+        call_command("sync_overdue_records", verbosity=0)
+
+        record.refresh_from_db()
+        self.assertEqual(record.status, BorrowRecord.OVERDUE)
+
 
 class AccessAndNotificationTests(LibraryTestDataMixin, TestCase):
     def test_staff_pages_render_with_corrected_schema(self):
@@ -230,6 +684,18 @@ class AccessAndNotificationTests(LibraryTestDataMixin, TestCase):
             with self.subTest(url=url):
                 response = self.client.get(url)
                 self.assertEqual(response.status_code, 200)
+
+    def test_admin_book_list_uses_matching_public_catalog_cover(self):
+        self.client.force_login(self.admin_user)
+
+        response = self.client.get(reverse("library:book_list"), {"q": "Clean Code"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Clean Code")
+        self.assertContains(response, "clean_code")
+        self.assertContains(response, 'data-book-real-cover="true"')
+        self.assertNotContains(response, "data:image/svg")
+        self.assertContains(response, PUBLIC_CATALOG_BY_ISBN[self.book.isbn]["code"])
 
     def test_member_sees_only_their_notifications(self):
         Notification.objects.create(
@@ -270,6 +736,14 @@ class SupabaseAuthViewTests(LibraryTestDataMixin, TestCase):
             with self.subTest(url_name=url_name):
                 response = self.client.get(reverse(f"library:{url_name}"))
                 self.assertEqual(response.status_code, 200)
+
+    @override_settings(USE_SUPABASE_AUTH=False)
+    def test_login_page_contains_static_brand_assets(self):
+        response = self.client.get(reverse("library:login"))
+
+        self.assertContains(response, "library-login.jpg")
+        self.assertContains(response, "library-logo.svg")
+        self.assertContains(response, "favicon.svg")
 
     @override_settings(USE_SUPABASE_AUTH=False)
     def test_local_fallback_login_accepts_email_when_supabase_disabled(self):
@@ -375,6 +849,8 @@ class SupabaseAuthIntegrationTests(LibraryTestDataMixin, TestCase):
             self.client.session["supabase_auth"]["email"],
             self.admin_user.email,
         )
+        self.assertNotIn("access_token", self.client.session["supabase_auth"])
+        self.assertNotIn("refresh_token", self.client.session["supabase_auth"])
 
     @override_settings(
         USE_SUPABASE_AUTH=True,
@@ -418,8 +894,7 @@ class SupabaseAuthIntegrationTests(LibraryTestDataMixin, TestCase):
         session["supabase_auth"] = {
             "user_id": "supabase-user-id",
             "email": self.admin_user.email,
-            "access_token": "access-token",
-            "refresh_token": "refresh-token",
+            "has_session": True,
         }
         session.save()
         service = Mock()
@@ -431,7 +906,7 @@ class SupabaseAuthIntegrationTests(LibraryTestDataMixin, TestCase):
             response = self.client.post(reverse("library:logout"))
 
         self.assertRedirects(response, reverse("library:login"))
-        service.sign_out.assert_called_once_with(access_token="access-token")
+        service.sign_out.assert_not_called()
         self.assertNotIn("_auth_user_id", self.client.session)
         self.assertNotIn("supabase_auth", self.client.session)
 
@@ -499,6 +974,34 @@ class SupabaseAuthIntegrationTests(LibraryTestDataMixin, TestCase):
         )
         self.assertEqual(response.status_code, 302)
 
+    def test_staff_flag_without_staff_role_cannot_manage_library(self):
+        self.member_user.is_staff = True
+        self.member_user.save(update_fields=["is_staff", "updated_at"])
+        self.client.force_login(self.member_user)
+
+        response = self.client.get(
+            reverse("library:entity_list", kwargs={"entity": "users"})
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+    def test_librarian_role_cannot_manage_users(self):
+        librarian_role = Role.objects.create(role_name="Librarian")
+        librarian = User.objects.create_user(
+            username="librarian",
+            email="librarian@example.com",
+            password="StrongPass123!",
+            full_name="Role Based Librarian",
+            role=librarian_role,
+        )
+        self.client.force_login(librarian)
+
+        response = self.client.get(
+            reverse("library:entity_list", kwargs={"entity": "users"})
+        )
+
+        self.assertEqual(response.status_code, 403)
+
 
 class ReportTests(LibraryTestDataMixin, TestCase):
     def setUp(self):
@@ -522,6 +1025,22 @@ class ReportTests(LibraryTestDataMixin, TestCase):
         self.assertEqual(report.generated_by, self.admin_user)
         self.assertTrue(report.file_path.name.endswith(".csv"))
         self.assertTrue(report.file_path.storage.exists(report.file_path.name))
+
+    def test_report_upload_rejects_disallowed_extension(self):
+        upload = SimpleUploadedFile(
+            "manual-report.txt",
+            b"not,csv",
+            content_type="text/plain",
+        )
+
+        response = self.client.post(
+            reverse("library:report_create"),
+            {"report_type": Report.BOOKS, "file_path": upload},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Only CSV report files are allowed")
+        self.assertFalse(Report.objects.exists())
 
 
 class SeedDataCommandTests(TestCase):

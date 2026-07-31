@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-label="Book cover unavailable">
+  <rect width="360" height="500" rx="28" fill="#162131"/>
+  <rect x="38" y="48" width="284" height="404" rx="18" fill="#223044" stroke="#475569" stroke-width="4"/>
+  <path d="M112 155h95c24 0 44 20 44 44v146H156c-24 0-44-20-44-44V155Z" fill="#334155"/>
+  <path d="M112 155h95c24 0 44 20 44 44v146H156c-24 0-44-20-44-44V155Z" fill="none" stroke="#94a3b8" stroke-width="10"/>
+  <path d="M146 212h72M146 248h72M146 284h46" stroke="#cbd5e1" stroke-width="12" stroke-linecap="round"/>
+  <text x="180" y="405" fill="#e5e7eb" font-family="Arial, sans-serif" font-size="24" font-weight="800" text-anchor="middle">Cover Unavailable</text>
+</svg>

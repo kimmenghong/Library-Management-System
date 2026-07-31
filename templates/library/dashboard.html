@@ -149,8 +149,8 @@
                         <td>{{ record.borrow_date }}</td>
                         <td>{{ record.due_date }}</td>
                         <td>
-                            <span class="badge status-badge text-bg-{% if record.status == 'overdue' %}danger{% elif record.status == 'returned' %}success{% else %}primary{% endif %}">
-                                {{ record.get_status_display }}
+                            <span class="badge status-badge text-bg-{% if record.effective_status == 'overdue' %}danger{% elif record.effective_status == 'returned' %}success{% else %}primary{% endif %}">
+                                {{ record.effective_status_display }}
                             </span>
                         </td>
                     </tr>

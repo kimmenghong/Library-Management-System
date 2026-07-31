@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Science Fiction book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#172554"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <circle cx="98" cy="92" r="5" fill="#fff"/><circle cx="252" cy="122" r="4" fill="#fff"/><circle cx="282" cy="78" r="3" fill="#fff"/><circle cx="138" cy="152" r="3" fill="#fff"/>
+  <path d="M180 100l56 110h-112zM180 100v166M124 210h112" fill="none" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>
+  <ellipse cx="180" cy="272" rx="104" ry="24" fill="none" stroke="#67e8f9" stroke-width="12"/>
+  <text x="38" y="350" fill="#fff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Across The</text>
+  <text x="38" y="398" fill="#fff" font-family="Arial, sans-serif" font-size="34" font-weight="700">Red Planet</text>
+  <text x="38" y="436" fill="#dbeafe" font-family="Arial, sans-serif" font-size="18">Science Fiction</text>
+</svg>

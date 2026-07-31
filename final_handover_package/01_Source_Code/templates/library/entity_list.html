@@ -1,0 +1,89 @@
+{% extends "library/base.html" %}
+
+{% block title %}{{ title }} | Library Management System{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-kicker">{% if entity == "members" %}Directory{% elif entity == "users" %}Access Control{% else %}Master Data{% endif %}</div>
+        <h1 class="page-title">{{ title }}</h1>
+        <p class="page-subtitle">
+            {% if entity == "members" %}
+                Manage member profiles and account status.
+            {% elif entity == "users" %}
+                Manage system users, roles, and active status.
+            {% else %}
+                Manage {{ title|lower }} in the lecturer data dictionary.
+            {% endif %}
+        </p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'library:entity_create' entity=entity %}">
+        <i class="bi bi-plus-lg me-1"></i>Add {{ title|slice:":-1" }}
+    </a>
+</div>
+
+<div class="toolbar-panel mb-3">
+    <div class="row g-2 align-items-center">
+        <div class="col-md-7 col-xl-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input class="form-control" type="search" placeholder="Search {{ title|lower }}" data-table-search="#{{ entity }}Table">
+            </div>
+        </div>
+        <div class="col-md-auto ms-md-auto">
+            <span class="badge text-bg-light border">{{ page_obj.paginator.count }} record{{ page_obj.paginator.count|pluralize }}</span>
+        </div>
+        <div class="col-12">
+            <div class="table-tool-group" data-table-tools="#{{ entity }}Table">
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle-column-filters>
+                    <i class="bi bi-layout-three-columns me-1"></i>Columns
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="excel">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-export-table="pdf">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" data-print-table>
+                    <i class="bi bi-printer me-1"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-panel p-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 data-table" id="{{ entity }}Table" data-enhanced-table>
+            <thead>
+                <tr>
+                    {% for header in headers %}<th>{{ header }}</th>{% endfor %}
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        {% for value in row.values %}
+                            <td>{% if forloop.first %}<span class="text-secondary">#{{ value }}</span>{% else %}{{ value }}{% endif %}</td>
+                        {% endfor %}
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'library:entity_update' entity=entity pk=row.pk %}">
+                                <i class="bi bi-pencil-square"></i>
+                                <span class="visually-hidden">Edit</span>
+                            </a>
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'library:entity_delete' entity=entity pk=row.pk %}">
+                                <i class="bi bi-trash"></i>
+                                <span class="visually-hidden">Delete</span>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="{{ headers|length|add:1 }}" class="empty-state">No records found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "library/includes/pagination.html" %}
+{% endblock %}

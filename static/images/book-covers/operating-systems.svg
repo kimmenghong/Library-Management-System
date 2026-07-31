@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Operating Systems book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0f172a"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <rect x="74" y="106" width="212" height="150" rx="18" fill="none" stroke="#fff" stroke-width="14"/>
+  <path d="M126 294h108M154 256v38M206 256v38" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="122" cy="152" r="9" fill="#38bdf8"/><circle cx="154" cy="152" r="9" fill="#38bdf8"/><circle cx="186" cy="152" r="9" fill="#38bdf8"/>
+  <text x="40" y="354" fill="#fff" font-family="Arial, sans-serif" font-size="37" font-weight="700">Operating</text>
+  <text x="40" y="402" fill="#fff" font-family="Arial, sans-serif" font-size="37" font-weight="700">Systems</text>
+  <text x="40" y="440" fill="#bfdbfe" font-family="Arial, sans-serif" font-size="18">Systems</text>
+</svg>

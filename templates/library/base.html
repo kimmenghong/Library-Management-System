@@ -52,31 +52,41 @@
                         <i class="bi bi-bell"></i><span>Notifications</span>
                     </a>
 
-                    {% if user.can_manage_library %}
+                    {% if user.can_manage_users or user.can_manage_circulation %}
                         <div class="sidebar-section">Management</div>
-                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='users' %}">
-                            <i class="bi bi-people"></i><span>Users</span>
-                        </a>
-                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='members' %}">
-                            <i class="bi bi-person-badge"></i><span>Members</span>
-                        </a>
-                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='roles' %}">
-                            <i class="bi bi-shield-check"></i><span>Roles</span>
-                        </a>
+                        {% if user.can_manage_users %}
+                            <a class="sidebar-link" href="{% url 'library:entity_list' entity='users' %}">
+                                <i class="bi bi-people"></i><span>Users</span>
+                            </a>
+                            <a class="sidebar-link" href="{% url 'library:entity_list' entity='roles' %}">
+                                <i class="bi bi-shield-check"></i><span>Roles</span>
+                            </a>
+                        {% endif %}
+                        {% if user.can_manage_circulation %}
+                            <a class="sidebar-link" href="{% url 'library:entity_list' entity='members' %}">
+                                <i class="bi bi-person-badge"></i><span>Members</span>
+                            </a>
+                        {% endif %}
+                    {% endif %}
 
+                    {% if user.can_manage_catalog or user.can_manage_reports %}
                         <div class="sidebar-section">Catalog</div>
-                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='categories' %}">
-                            <i class="bi bi-tags"></i><span>Categories</span>
-                        </a>
-                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='authors' %}">
-                            <i class="bi bi-vector-pen"></i><span>Authors</span>
-                        </a>
-                        <a class="sidebar-link" href="{% url 'library:entity_list' entity='publishers' %}">
-                            <i class="bi bi-building"></i><span>Publishers</span>
-                        </a>
-                        <a class="sidebar-link" href="{% url 'library:report_list' %}">
-                            <i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span>
-                        </a>
+                        {% if user.can_manage_catalog %}
+                            <a class="sidebar-link" href="{% url 'library:entity_list' entity='categories' %}">
+                                <i class="bi bi-tags"></i><span>Categories</span>
+                            </a>
+                            <a class="sidebar-link" href="{% url 'library:entity_list' entity='authors' %}">
+                                <i class="bi bi-vector-pen"></i><span>Authors</span>
+                            </a>
+                            <a class="sidebar-link" href="{% url 'library:entity_list' entity='publishers' %}">
+                                <i class="bi bi-building"></i><span>Publishers</span>
+                            </a>
+                        {% endif %}
+                        {% if user.can_manage_reports %}
+                            <a class="sidebar-link" href="{% url 'library:report_list' %}">
+                                <i class="bi bi-file-earmark-bar-graph"></i><span>Reports</span>
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </nav>
             </aside>
@@ -115,7 +125,7 @@
                                     <small>Titles, ISBN, authors, categories</small>
                                 </span>
                             </a>
-                            {% if user.can_manage_library %}
+                            {% if user.can_manage_circulation %}
                                 <a href="{% url 'library:entity_list' entity='members' %}" data-search-item data-search-text="members students teachers staff member code department">
                                     <i class="bi bi-person-badge"></i>
                                     <span>
@@ -138,7 +148,7 @@
                                     <small>Payments, balances, member fines</small>
                                 </span>
                             </a>
-                            {% if user.can_manage_library %}
+                            {% if user.can_manage_reports %}
                                 <a href="{% url 'library:report_list' %}" data-search-item data-search-text="reports analytics exports most borrowed active borrowers fines">
                                     <i class="bi bi-file-earmark-bar-graph"></i>
                                     <span>

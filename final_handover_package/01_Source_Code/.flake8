@@ -1,0 +1,27 @@
+[flake8]
+max-line-length = 88
+extend-ignore = E203,W503
+exclude =
+    .git,
+    .venv,
+    __pycache__,
+    staticfiles,
+    media,
+    apps/library/migrations,
+    apps/accounts,
+    apps/activity,
+    apps/announcements,
+    apps/api,
+    apps/catalog,
+    apps/circulation,
+    apps/dashboard,
+    apps/digital_library,
+    apps/fines,
+    apps/import_export,
+    apps/members,
+    apps/notifications,
+    apps/reports,
+    apps/reviews,
+    apps/settings_app,
+    apps/status_tracking,
+    apps/support

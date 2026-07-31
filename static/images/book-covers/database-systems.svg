@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 500" role="img" aria-labelledby="title">
+  <title id="title">Database Systems book cover</title>
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#059669"/><stop offset="1" stop-color="#65a30d"/></linearGradient></defs>
+  <rect width="360" height="500" rx="28" fill="url(#g)"/>
+  <circle cx="280" cy="72" r="86" fill="rgba(255,255,255,.14)"/>
+  <ellipse cx="180" cy="150" rx="78" ry="28" fill="none" stroke="#fff" stroke-width="14"/>
+  <path d="M102 150v126c0 16 35 29 78 29s78-13 78-29V150M102 214c0 16 35 29 78 29s78-13 78-29" fill="none" stroke="#fff" stroke-width="14"/>
+  <text x="40" y="352" fill="#fff" font-family="Arial, sans-serif" font-size="38" font-weight="700">Database</text>
+  <text x="40" y="400" fill="#fff" font-family="Arial, sans-serif" font-size="38" font-weight="700">Systems</text>
+  <text x="40" y="438" fill="#dcfce7" font-family="Arial, sans-serif" font-size="18">Data Management</text>
+</svg>

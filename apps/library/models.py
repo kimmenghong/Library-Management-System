@@ -63,6 +63,33 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
     """Custom authentication model backed by the required `users` table."""
 
+    MANAGE_LIBRARY_ROLES = frozenset(
+        {
+            "super admin",
+            "admin",
+            "librarian",
+            "assistant librarian",
+        }
+    )
+    MANAGE_USERS_ROLES = frozenset({"super admin", "admin"})
+    MANAGE_CATALOG_ROLES = frozenset(
+        {
+            "super admin",
+            "admin",
+            "librarian",
+            "assistant librarian",
+        }
+    )
+    MANAGE_CIRCULATION_ROLES = frozenset(
+        {
+            "super admin",
+            "admin",
+            "librarian",
+            "assistant librarian",
+        }
+    )
+    MANAGE_REPORTS_ROLES = frozenset({"super admin", "admin", "librarian"})
+
     user_id = models.BigAutoField(primary_key=True)
     role = models.ForeignKey(
         Role,
@@ -116,16 +143,40 @@ class User(AbstractBaseUser):
         return self.full_name.split()[0] if self.full_name else self.username
 
     @property
+    def normalized_role_name(self):
+        if not self.role_id:
+            return ""
+        return self.role.role_name.strip().lower()
+
+    @property
     def can_manage_library(self):
-        if self.is_superuser or self.is_staff:
+        if self.is_superuser:
             return True
-        staff_roles = {
-            "super admin",
-            "admin",
-            "librarian",
-            "assistant librarian",
-        }
-        return bool(self.role_id and self.role.role_name.strip().lower() in staff_roles)
+        return self.normalized_role_name in self.MANAGE_LIBRARY_ROLES
+
+    @property
+    def can_manage_users(self):
+        if self.is_superuser:
+            return True
+        return self.normalized_role_name in self.MANAGE_USERS_ROLES
+
+    @property
+    def can_manage_catalog(self):
+        if self.is_superuser:
+            return True
+        return self.normalized_role_name in self.MANAGE_CATALOG_ROLES
+
+    @property
+    def can_manage_circulation(self):
+        if self.is_superuser:
+            return True
+        return self.normalized_role_name in self.MANAGE_CIRCULATION_ROLES
+
+    @property
+    def can_manage_reports(self):
+        if self.is_superuser:
+            return True
+        return self.normalized_role_name in self.MANAGE_REPORTS_ROLES
 
     def __str__(self):
         return self.username
@@ -438,6 +489,22 @@ class BorrowRecord(models.Model):
     def days_overdue(self):
         comparison_date = self.return_date or timezone.localdate()
         return max((comparison_date - self.due_date).days, 0)
+
+    @property
+    def effective_status(self):
+        if (
+            self.status == self.BORROWED
+            and self.return_date is None
+            and self.due_date < timezone.localdate()
+        ):
+            return self.OVERDUE
+        return self.status
+
+    @property
+    def effective_status_display(self):
+        return dict(self.STATUS_CHOICES).get(
+            self.effective_status, self.effective_status
+        )
 
     def save(self, *args, **kwargs):
         self.full_clean()

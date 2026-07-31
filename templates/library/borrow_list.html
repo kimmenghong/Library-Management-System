@@ -85,8 +85,8 @@
                         <td>{{ record.received_by.username|default:"-" }}</td>
                         <td>{{ record.return_date|default:"-" }}</td>
                         <td>
-                            <span class="badge status-badge text-bg-{% if record.status == 'overdue' %}danger{% elif record.status == 'returned' %}success{% elif record.status == 'lost' %}dark{% else %}primary{% endif %}">
-                                {{ record.get_status_display }}
+                            <span class="badge status-badge text-bg-{% if record.effective_status == 'overdue' %}danger{% elif record.effective_status == 'returned' %}success{% elif record.effective_status == 'lost' %}dark{% else %}primary{% endif %}">
+                                {{ record.effective_status_display }}
                             </span>
                         </td>
                         {% if can_manage %}
